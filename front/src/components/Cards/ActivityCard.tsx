@@ -8,23 +8,19 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
 import TurnosService from "@/services/turnos";
 
-// ✅ define un horario "válido" para TS
-type HorarioOk = { fecha: string; horaInicio: string; horaFin: string };
 
+type HorarioOk = { fecha: string; horaInicio: string; horaFin: string };
 function isHorarioOk(x: any): x is HorarioOk {
-  return (
-    x &&
-    typeof x.fecha === "string" &&
-    typeof x.horaInicio === "string" &&
-    typeof x.horaFin === "string"
-  );
+  return x && typeof x.fecha==="string" && typeof x.horaInicio==="string" && typeof x.horaFin==="string";
+}
+function esFuturo(h: HorarioOk) {
+  const [y,m,d] = h.fecha.split("-").map(Number);
+  const [hh,mm] = h.horaInicio.split(":").map(Number);
+  return new Date(y,(m??1)-1,d,hh??0,mm??0,0).getTime() >= Date.now();
 }
 
-const HORARIO_FALLBACK: HorarioOk = {
-  fecha: "2025-10-03",
-  horaInicio: "10:00:00",
-  horaFin: "11:00:00",
-};
+
+
 
 
 type Props = IClase;
@@ -68,30 +64,31 @@ async function manejarClick(e: React.MouseEvent<HTMLButtonElement>) {
   if (esRegistrado) return; // solo premium puede reservar
 
   try {
-    // 1) sacar datos reales
-    const usuarioId = user!.userId;   // viene del AuthContext
-    const claseId = id;               // prop de la card
+    const usuarioId = (user as any)?.userId ?? (user as any)?.id ?? (user as any)?.sub;
 
-    // 2) elegir un horario válido (con narrowing)
-const h: HorarioOk = isHorarioOk(horarios?.[0]) ? horarios![0] : HORARIO_FALLBACK;
+    // ✅ usar un horario FUTURO si viene del back
+    const validos = Array.isArray(horarios) ? (horarios as any[]).filter(isHorarioOk).filter(esFuturo) : [];
+    if (validos.length === 0) {
+      // si no hay horarios válidos, vamos al detalle para elegir
+      return router.push(`/clases/${id}#reservar`);
+    }
 
-// 3) crear turno
-await TurnosService.crear({
-  usuarioId,
-  claseId,
-  fecha: h.fecha,          // 'YYYY-MM-DD'
-  horaInicio: h.horaInicio,// 'HH:mm:ss'
-  horaFin: h.horaFin,      // 'HH:mm:ss'
-});
-
+    const h = validos[0];
+    await TurnosService.crear({
+      usuarioId,
+      claseId: id,
+      fecha: h.fecha,
+      horaInicio: h.horaInicio,
+      horaFin: h.horaFin,
+    });
 
     toast.success("¡Reserva realizada!");
     router.push("/misTurnos");
   } catch (err: any) {
-    // mostrará el texto devuelto por el back si TurnosService hace res.text()
     toast.error(err?.message ?? "No se pudo reservar");
   }
 }
+
 
 
 
