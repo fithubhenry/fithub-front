@@ -75,24 +75,20 @@ export default function UsuariosAdminPage() {
   }, []);
   const handleDeleteUser = async (id: string) => {
     try {
-      const res = await api.delete(`/users/${id}`);
-      // Si el backend responde con éxito (puedes ajustar según tu API)
-      if (res && (res.success || res.status === 200 || res === true)) {
-        const data = await api.get("/users");
-        const mapped = data.map((user: any) => ({
-          id: user.id,
-          name: user.nombre && user.apellido ? `${user.nombre} ${user.apellido}` : user.apellido_nombre || user.nombre || "",
-          email: user.email,
-          role: user.esAdmin ? "Admin" : "Usuario",
-          estado: user.estado,
-          imageUrl: user.profileImageUrl || null,
-          telefono: user.telefono || null,
-        }));
-        setUsers(mapped);
-        toast.success("Usuario eliminado correctamente");
-      } else {
-        toast.error("No se pudo eliminar el usuario");
-      }
+      await api.delete(`/users/${id}`);
+      // Si llegamos aquí, el delete fue exitoso
+      const data = await api.get("/users");
+      const mapped = data.map((user: any) => ({
+        id: user.id,
+        name: user.nombre && user.apellido ? `${user.nombre} ${user.apellido}` : user.apellido_nombre || user.nombre || "",
+        email: user.email,
+        role: user.esAdmin ? "Admin" : "Usuario",
+        estado: user.estado,
+        imageUrl: user.profileImageUrl || null,
+        telefono: user.telefono || null,
+      }));
+      setUsers(mapped);
+      toast.success("Usuario eliminado correctamente");
     } catch (err) {
       toast.error("Error al eliminar usuario");
     }

@@ -47,6 +47,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     Cookies.remove('token');
   };
 
+  const refreshUserData = async () => {
+    if (user?.userId) {
+      try {
+        // Intentar obtener los datos actualizados del usuario varias veces
+        // ya que el webhook puede tardar en procesar
+        let attempts = 0;
+        const maxAttempts = 5;
+        const delayBetweenAttempts = 2000; // 2 segundos
+        
+        while (attempts < maxAttempts) {
+          try {
+            const updatedUserData = await getUserById(user.userId);
+            
+            // Si el estado cambió a Activo, actualizar y salir
+            if (updatedUserData.estado === 'Activo' && user.estado !== 'Activo') {
+              const updatedUser = { ...user, ...updatedUserData };
+              setUser(updatedUser);
+              break;
+            }
+            
+            // Si ya era Activo o en el último intento, actualizar datos
+            if (updatedUserData.estado === 'Activo' || attempts === maxAttempts - 1) {
+              const updatedUser = { ...user, ...updatedUserData };
+              setUser(updatedUser);
+              break;
+            }
+            
+            attempts++;
+            if (attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, delayBetweenAttempts));
+            }
+          } catch (error) {
+            attempts++;
+            if (attempts >= maxAttempts) {
+              throw error;
+            }
+            await new Promise(resolve => setTimeout(resolve, delayBetweenAttempts));
+          }
+        }
+      } catch (error) {
+        console.error('Error al actualizar datos del usuario:', error);
+      }
+    }
+  };
+
   function decodeToken(token: string): User | null {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -62,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, logout, setUser }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, logout, setUser, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
