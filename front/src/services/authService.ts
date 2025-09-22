@@ -57,6 +57,13 @@ export async function login(userData: ILoginUser) {
     const parsedResponse = await response.json();
 
     if (parsedResponse.access_token) {
+      // Decodificar el JWT para obtener el estado
+      const base64Payload = parsedResponse.access_token.split('.')[1];
+      const payload = JSON.parse(atob(base64Payload.replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload.estado && payload.estado === 'Inactivo') {
+        toast.error('El usuario fue eliminado y no puede iniciar sesión. Por favor contactar con administración');
+        return null;
+      }
       // Guardar token en cookies
       Cookies.set("token", parsedResponse.access_token, { expires: 7 });
 

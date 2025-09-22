@@ -61,7 +61,12 @@ const apiClases = {
       headers,
     });
     if (!res.ok) throw new Error('Error en DELETE ' + path);
-    return res.json();
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
   },
 };
 
