@@ -11,13 +11,22 @@ export default function GoogleCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
     if (token) {
-      router.replace("/profile");
+      // Decodificar el JWT para obtener el estado
+      const base64Payload = token.split('.')[1];
+      const payload = JSON.parse(atob(base64Payload.replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload.estado && payload.estado === 'Inactivo') {
+        // Mostrar toast y no loguear
+        import('react-toastify').then(({ toast }) => {
+          toast.error('El usuario fue eliminado y no puede iniciar sesión. Por favor contactar con administración');
+        });
+        return;
+      }
       Cookies.set("token", token, { expires: 7 });
+      router.replace("/profile");
     }
   }, [router]);
 

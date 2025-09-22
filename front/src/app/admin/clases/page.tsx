@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import apiClases from '@/services/apiClases';
-import Link from 'next/link';
 import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { IClase } from '@/types';
 
 export default function ClasesAdminPage() {
@@ -106,9 +107,22 @@ export default function ClasesAdminPage() {
       setForm({
         nombre: '', descripcion: '', intensidad: 'Media', instructor: '', horarios: [{ fecha: '', horaInicio: '', horaFin: '' }], duracion: '', capacidad: 0, tipo: 'Yoga', grupo_musculo: 'Pierna', sub_musculo: 'Abdominal', sede: '', imageUrl: '',
       });
-      alert('Clase agregada correctamente');
-    } catch (err) {
-      alert('Error al agregar la clase');
+      toast.success('Clase agregada correctamente');
+      setAddDialogOpen(false);
+    } catch (err: any) {
+      let msg = 'Error al agregar la clase';
+      if (err?.message) {
+        // Elimina detalles técnicos y prefijos comunes
+        msg = err.message
+          .replace(/file:\\.*?apiClases\.ts:\d+ POST error details: Error en POST \/clases:/i, '')
+          .replace(/Error al agregar clase: Error: Error en POST \/clases:/i, '')
+          .replace(/Error en POST \/clases:/i, '')
+          .replace(/^Error:/i, '')
+          .trim();
+      } else if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      }
+      toast.error(msg);
       console.error('Error al agregar clase:', err);
     }
   };
@@ -138,17 +152,25 @@ export default function ClasesAdminPage() {
     <div className="min-h-screen bg-black pt-2 px-2 md:px-6 flex items-start justify-center">
       <div className="w-full max-w-7xl bg-black rounded-2xl p-2 sm:p-4 md:p-8 shadow-[6px_8px_24px_0px_rgba(253,230,0,0.2)] flex flex-col gap-6 items-center">
             <h1 className="text-center text-2xl font-anton text-[#fee600]">Administración de Clases</h1>
-            <Link href="/admin/clases/todas" className="mt-2 mb-4 inline-block bg-[#fee600] text-black font-semibold px-4 py-2 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors">Ver todas las clases</Link>
             {loading ? (
               <div className="text-[#fee600] py-8">Cargando clases...</div>
             ) : error ? (
               <div className="text-red-400 py-8">{error}</div>
             ) : (
               <>
-                <button type="button" className="bg-[#fee600] text-black font-bold px-8 py-2 text-base rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors mb-4" onClick={() => setAddDialogOpen(true)}>Agregar Clase</button>
+                <div className="w-full flex justify-end">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 bg-[#fee600] text-black font-bold px-4 py-1 text-sm rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors shadow"
+                    onClick={() => setAddDialogOpen(true)}
+                  >
+                    <span className="text-lg font-bold">+</span>
+                    <span>Agregar Clase</span>
+                  </button>
+                </div>
                 {addDialogOpen && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-                    <div className="bg-neutral-900 border border-[#fee600] rounded-xl p-8 w-full max-w-2xl shadow-xl">
+                    <div className="bg-gray-900 border border-[#fee600] rounded-xl p-8 w-full max-w-2xl shadow-xl">
                       <h2 className="text-xl font-bold text-[#fee600] mb-4">Agregar Nueva Clase</h2>
                       <form onSubmit={handleAddClase} className="grid grid-cols-2 gap-4">
                         <input type="text" name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full col-span-2" required />
@@ -190,45 +212,52 @@ export default function ClasesAdminPage() {
                         </select>
                         <textarea name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange} rows={3} className="border border-[#fee600] bg-black text-white px-2 py-2 rounded w-full col-span-2" required />
                         <div className="col-span-2 flex justify-end gap-2 mt-2">
-                          <button type="button" className="bg-gray-700 text-white px-4 py-2 rounded font-bold border border-gray-700" onClick={() => setAddDialogOpen(false)}>Cancelar</button>
-                          <button type="submit" className="bg-[#fee600] text-black px-4 py-2 rounded font-bold border border-[#fee600]">Agregar</button>
+                          <button type="button" className="bg-gray-700 text-white px-4 py-2 rounded font-bold border border-gray-700 cursor-pointer" onClick={() => setAddDialogOpen(false)}>Cancelar</button>
+                          <button type="submit" className="bg-[#fee600] text-black px-4 py-2 rounded font-bold border border-[#fee600] cursor-pointer">Agregar</button>
                         </div>
                       </form>
                     </div>
                   </div>
                 )}
                 {/* Lista de clases como cards */}
-                <div className="w-full mt-8">
+                <div className="w-full">
                   <h2 className="text-xl font-bold text-[#fee600] mb-4">Clases actuales</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {clases.length === 0 ? (
                       <div className="col-span-full text-center text-white py-8">No hay clases registradas</div>
                     ) : (
                       clases.map((clase) => (
-                        <div key={clase.id} className="bg-neutral-900 border border-[#fee600] rounded-xl p-4 flex flex-col gap-2 shadow-md">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-lg text-[#fee600]">{clase.nombre}</span>
-                            <span className="text-xs px-2 py-1 rounded bg-[#fee600] text-black font-semibold">{clase.tipo}</span>
+                        <div key={clase.id} className="bg-gray-900 rounded-xl border border-[#fee600] shadow p-4 flex flex-col justify-between">
+                          <div>
+                            <a
+                              href={`/clases/${clase.id}`}
+                              className="text-lg font-bold text-[#fee600] mb-2 hover:underline cursor-pointer"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {clase.nombre}
+                            </a>
+                            <p className="text-white text-sm mb-2 line-clamp-2">{clase.descripcion}</p>
+                            <div className="text-xs text-gray-300 mb-1">Instructor: {clase.instructor}</div>
+                            <div className="text-xs text-gray-300 mb-1">Horario: {clase.horarios && clase.horarios[0] ? `${clase.horarios[0].fecha} ${clase.horarios[0].horaInicio} - ${clase.horarios[0].horaFin}` : 'Sin horario'} | Duración: {clase.duracion}</div>
+                            <div className="text-xs text-gray-300 mb-1">Capacidad: {clase.capacidad}</div>
+                            <div className="text-xs text-gray-300 mb-1">Tipo: {clase.tipo}</div>
+                            <div className="text-xs text-gray-300 mb-1">Grupo: {Array.isArray(clase.grupo_musculo) ? clase.grupo_musculo.join(', ') : clase.grupo_musculo} | Sub: {Array.isArray(clase.sub_musculo) ? clase.sub_musculo.join(', ') : clase.sub_musculo}</div>
+                            <div className="text-xs text-gray-300 mb-1">Sede: {clase.sede}</div>
+                            <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#fee600] text-black">{clase.intensidad}</span>
                           </div>
-                          <div className="text-sm text-white">Instructor: <span className="font-semibold">{clase.instructor}</span></div>
-                          <div className="flex flex-wrap gap-2 text-xs text-white">
-                            <span>Duración: {clase.duracion}</span>
-                            <span>Capacidad: {clase.capacidad}</span>
-                            <span>Sede: {clase.sede}</span>
-                            <span>Intensidad: {clase.intensidad}</span>
-                            <span>Grupo: {Array.isArray(clase.grupo_musculo) ? clase.grupo_musculo.join(', ') : clase.grupo_musculo}</span>
-                            <span>Sub: {Array.isArray(clase.sub_musculo) ? clase.sub_musculo.join(', ') : clase.sub_musculo}</span>
-                          </div>
-                          <div className="text-xs text-white">{clase.descripcion}</div>
-                          <div className="flex gap-2 pt-2">
-                            {/* <button type="button" className="bg-[#fee600] text-black px-3 py-1 rounded font-bold hover:bg-black hover:text-[#fee600] border border-[#fee600]" onClick={() => openEditModal(clase)}>Editar</button> */}
-                            <button type="button" className="bg-red-600 text-white px-3 py-1 rounded font-bold hover:bg-black hover:text-red-600 border border-red-600" onClick={() => handleDeleteClase(clase.id)}>Eliminar</button>
-                          </div>
+                          <button
+                            className="mt-4 bg-[#fee600] text-black font-semibold px-4 py-2 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors cursor-pointer"
+                            onClick={() => handleDeleteClase(clase.id)}
+                          >
+                            Eliminar
+                          </button>
                         </div>
                       ))
                     )}
                   </div>
                 </div>
+                <ToastContainer position="bottom-center" autoClose={2000} hideProgressBar theme="dark" />
               </>
             )}
       </div>

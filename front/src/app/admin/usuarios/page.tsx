@@ -5,10 +5,39 @@ import { useState, useEffect } from "react";
 import { FaUser, FaUserShield, FaUserCheck } from "react-icons/fa";
 import api from "@/services/api";
 // ...existing code...
-import { Plus, Search, Edit, Trash2, UserCheck } from "lucide-react";
+import { Search } from "lucide-react";
 import { toast } from "react-toastify";
 
 export default function UsuariosAdminPage() {
+  // Estado local para cambios en el modal de inactivos
+  const [inactiveEdits, setInactiveEdits] = useState<{[id: string]: string}>({});
+
+  // Manejar cambio en el select de estado
+  const handleInactiveEditChange = (id: string, value: string) => {
+    setInactiveEdits(prev => ({ ...prev, [id]: value }));
+  };
+
+  // Cambiar estado de usuario inactivo a invitado
+  const handleSetInvitado = async (id: string) => {
+    try {
+      await api.patch(`/users/${id}`, { estado: 'Invitado' });
+      const data = await api.get('/users');
+      const mapped = data.map((user: any) => ({
+        id: user.id,
+        name: user.nombre && user.apellido ? `${user.nombre} ${user.apellido}` : user.apellido_nombre || user.nombre || "",
+        email: user.email,
+        role: user.esAdmin ? "Admin" : "Usuario",
+        estado: user.estado,
+        imageUrl: user.profileImageUrl || null,
+        telefono: user.telefono || null,
+      }));
+      setUsers(mapped);
+      toast.success("Usuario actualizado a Invitado");
+    } catch {
+      toast.error("No se pudo actualizar el usuario");
+    }
+  }
+  const [showInactiveModal, setShowInactiveModal] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +47,7 @@ export default function UsuariosAdminPage() {
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editRole, setEditRole] = useState<"Admin" | "Usuario">("Usuario");
+  const [showInactive, setShowInactive] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -108,6 +138,8 @@ export default function UsuariosAdminPage() {
       return matchesSearch && matchesRole;
     });
 
+  const inactiveUsers = users.filter(user => user.estado === "Inactivo");
+
   return (
     <main className="bg-black">
   <div className="min-h-screen bg-black pt-8 flex flex-col px-6 max-w-screen-2xl mx-auto">
@@ -137,7 +169,7 @@ export default function UsuariosAdminPage() {
 
       {/* Filtros */}
   <div className="bg-black border-[#fee600] border-2 w-full mb-8 rounded-xl p-6 px-8">
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#fee600]" />
@@ -159,7 +191,130 @@ export default function UsuariosAdminPage() {
             <option value="Usuario">Usuario</option>
             <option value="Admin">Admin</option>
           </select>
-          {/* El filtro de estado se elimina para no mostrar los inactivos */}
+          <button
+            className="border border-[#fee600] rounded px-2 py-1 font-semibold text-sm w-full sm:w-48 transition-colors cursor-pointer bg-black text-[#fee600] hover:bg-[#fee600] hover:text-black"
+            onClick={() => setShowInactiveModal(true)}
+          >
+            Ver Inactivos
+          </button>
+      {/* Modal de usuarios inactivos - estilo admin/clases */}
+      {showInactiveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-gray-900 border border-[#fee600] rounded-xl p-6 w-full max-w-3xl shadow-xl relative" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+            <h2 className="text-xl font-bold text-[#fee600] mb-4 text-center">Usuarios Inactivos</h2>
+            {inactiveUsers.length === 0 ? (
+              <p className="text-gray-300 text-center">No hay usuarios inactivos.</p>
+            ) : (
+              <div style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+                <table className="w-full bg-black border border-[#fee600] rounded-xl text-[#fee600] table-fixed shadow-lg">
+                  <thead>
+                    <tr className="bg-[#fee600]/10">
+                      <th className="px-4 py-3 border-b border-[#fee600] text-left text-base font-bold tracking-wide">Nombre</th>
+                      <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Email</th>
+                      <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Rol</th>
+                      <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inactiveUsers.map(user => (
+                      <tr key={user.id} className="hover:bg-[#fee600]/10 transition-colors">
+                        <td className="px-4 py-3 border-b border-[#fee600] font-medium text-base">{user.name}</td>
+                        <td className="px-4 py-3 border-b border-[#fee600] text-center">{user.email}</td>
+                        <td className="px-4 py-3 border-b border-[#fee600] text-center">{user.role}</td>
+                        <td className="px-4 py-3 border-b border-[#fee600] text-center">
+                          <select
+                            className="border border-[#fee600] bg-black text-[#fee600] px-2 py-1 rounded"
+                            value={inactiveEdits[user.id] ?? user.estado}
+                            onChange={e => handleInactiveEditChange(user.id, e.target.value)}
+                          >
+                            <option value="Inactivo">Inactivo</option>
+                            <option value="Invitado">Invitado</option>
+                            <option value="Activo">Activo</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {inactiveUsers.length > 0 && (
+              <div className="flex justify-end gap-4 mt-4">
+                <button
+                  className="bg-gray-700 text-white px-4 py-2 rounded font-bold border border-gray-700 cursor-pointer hover:bg-[#fee600] hover:text-black transition-colors"
+                  onClick={() => setShowInactiveModal(false)}
+                >
+                  Cerrar
+                </button>
+                <button
+                  className="bg-[#fee600] text-black px-4 py-2 rounded font-bold border border-[#fee600] cursor-pointer hover:bg-black hover:text-[#fee600] transition-colors"
+                  onClick={async () => {
+                    // Solo actualizar usuarios cuyo estado fue modificado y nombre/apellido válidos
+                    const usersToUpdate = inactiveUsers.filter(user => {
+                      const nuevoEstado = inactiveEdits[user.id];
+                      if (!nuevoEstado || nuevoEstado === user.estado) return false;
+                      const partes = user.name ? user.name.split(' ') : [];
+                      const nombre = partes[0] || '';
+                      const apellido = partes.slice(1).join(' ') || '';
+                      return nombre.length >= 3 && apellido.length >= 3 && user.email && user.email.length > 0;
+                    });
+                    // Detectar usuarios inválidos
+                    const invalidUsers = inactiveUsers.filter(user => {
+                      const nuevoEstado = inactiveEdits[user.id];
+                      if (!nuevoEstado || nuevoEstado === user.estado) return false;
+                      const partes = user.name ? user.name.split(' ') : [];
+                      const nombre = partes[0] || '';
+                      const apellido = partes.slice(1).join(' ') || '';
+                      return nombre.length < 3 || apellido.length < 3 || !user.email || user.email.length === 0;
+                    });
+                    if (invalidUsers.length > 0) {
+                      toast.error("Nombre, apellido y email deben ser válidos para: " + invalidUsers.map(u => u.name).join(", "));
+                      return;
+                    }
+                    if (usersToUpdate.length === 0) {
+                      toast.info("No hay cambios para guardar");
+                      setShowInactiveModal(false);
+                      return;
+                    }
+                    const promises = usersToUpdate.map(user => {
+                      const nuevoEstado = inactiveEdits[user.id];
+    
+                      const partes = user.name ? user.name.split(' ') : [];
+                      const nombre = partes[0] || '';
+                      const apellido = partes.slice(1).join(' ') || '';
+                      return api.patch(`/users/${user.id}`, {
+                        nombre,
+                        apellido,
+                        estado: inactiveEdits[user.id],
+                      });
+                    });
+                    try {
+                      await Promise.all(promises);
+                      const data = await api.get('/users');
+                      const mapped = data.map((user: any) => ({
+                        id: user.id,
+                        name: user.nombre && user.apellido ? `${user.nombre} ${user.apellido}` : user.apellido_nombre || user.nombre || "",
+                        email: user.email,
+                        role: user.esAdmin ? "Admin" : "Usuario",
+                        estado: user.estado,
+                        imageUrl: user.profileImageUrl || null,
+                        telefono: user.telefono || null,
+                      }));
+                      setUsers(mapped);
+                      toast.success("Cambios guardados correctamente");
+                      setShowInactiveModal(false);
+                    } catch {
+                      toast.error("No se pudieron guardar los cambios");
+                    }
+                  }}
+                >
+                  Aceptar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
         </div>
       </div>
 
