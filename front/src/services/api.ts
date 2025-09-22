@@ -47,7 +47,15 @@ const api = {
       headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error("Error en DELETE " + path);
-    return res.json();
+    // Manejar respuestas sin contenido (204 No Content)
+    if (res.status === 204 || res.headers.get("content-length") === "0") {
+      return { success: true };
+    }
+    try {
+      return res.json();
+    } catch {
+      return { success: true };
+    }
   },
 };
 

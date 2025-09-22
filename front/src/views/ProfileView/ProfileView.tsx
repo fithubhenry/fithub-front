@@ -92,7 +92,6 @@ export default function ProfileView() {
       fecha_nacimiento: (document.getElementById("fecha_nacimiento") as HTMLInputElement)?.value,
       direccion: (document.getElementById("direccion") as HTMLInputElement)?.value,
       ciudad: (document.getElementById("ciudad") as HTMLInputElement)?.value,
-      esAdmin: user?.esAdmin ?? false,
       ...(password ? { password } : {}),
     };
     if (telefonoValue && !isNaN(Number(telefonoValue))) {
