@@ -140,7 +140,7 @@ async function manejarClick(e: React.MouseEvent<HTMLButtonElement>) {
           className={`mt-3 w-full rounded-md px-4 py-2.5 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 ${
             deshabilitado
               ? "bg-neutral-300 text-neutral-500 cursor-not-allowed"
-              : "bg-[#fee600] text-black hover:bg-black hover:text-[#fee600]"
+              : "bg-black text-[#fee600] border border-[#fee600] hover:bg-[#fee600] hover:text-black cursor-pointer"
           }`}
         >
           {textoBoton}

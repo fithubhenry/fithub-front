@@ -48,7 +48,7 @@ export default function ReservarHorario({ clase }: { clase: any }) {
         <button
           key={s.id || i}
           onClick={() => reservar(s)}
-          className="px-3 py-2 rounded-md border border-yellow-500/40 text-[#fee600] font-semibold hover:bg-[#fee600] hover:text-black"
+          className="px-3 py-2 rounded-md border border-[#fee600] bg-black text-[#fee600] font-semibold hover:bg-[#fee600] hover:text-black cursor-pointer"
         >
           {s.fecha} {s.horaInicio.slice(0, 5)}–{s.horaFin.slice(0, 5)} hs
         </button>

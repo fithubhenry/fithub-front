@@ -1,18 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Cookies from 'js-cookie';
 import apiClases from '@/services/apiClases';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { IClase } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 
 export default function ClasesAdminPage() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const { user } = useAuth();
   
   const [clases, setClases] = useState<IClase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   useEffect(() => {
     const fetchClases = async () => {
       try {
@@ -76,6 +82,40 @@ export default function ClasesAdminPage() {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
+
+  const uploadImageToCloudinary = async (file: File): Promise<string | null> => {
+    if (!user?.userId) return null;
+    
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    try {
+      const token = Cookies.get("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/profile-image/${user.userId}`,
+        { 
+          method: "PATCH", 
+          headers: token ? { Authorization: `Bearer ${token}` } : {}, 
+          body: formData 
+        }
+      );
+      
+      if (!res.ok) throw new Error("Error al subir la imagen");
+      
+      const data = await res.json();
+      return data.imageUrl || null;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
   const handleAddClase = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Intentando agregar clase, form:', form);
@@ -85,11 +125,28 @@ export default function ClasesAdminPage() {
       alert('Por favor completa todos los campos obligatorios');
       return;
     }
+    
+    setUploading(true);
     try {
+      let imageUrl = '';
+      
+      // Si hay una imagen seleccionada, subirla primero
+      if (selectedImage) {
+        const uploadedImageUrl = await uploadImageToCloudinary(selectedImage);
+        if (uploadedImageUrl) {
+          imageUrl = uploadedImageUrl;
+        } else {
+          toast.error('Error al subir la imagen');
+          setUploading(false);
+          return;
+        }
+      }
+      
       const payload = {
         ...form,
         grupo_musculo: [form.grupo_musculo],
         sub_musculo: [form.sub_musculo],
+        imageUrl: imageUrl, // Incluir la URL de la imagen subida
       };
       // Formatear horaInicio y horaFin a HH:mm:ss
       const formatHora = (h: string) => h && h.length === 5 ? h + ':00' : h;
@@ -107,6 +164,7 @@ export default function ClasesAdminPage() {
       setForm({
         nombre: '', descripcion: '', intensidad: 'Media', instructor: '', horarios: [{ fecha: '', horaInicio: '', horaFin: '' }], duracion: '', capacidad: 0, tipo: 'Yoga', grupo_musculo: 'Pierna', sub_musculo: 'Abdominal', sede: '', imageUrl: '',
       });
+      setSelectedImage(null);
       toast.success('Clase agregada correctamente');
       setAddDialogOpen(false);
     } catch (err: any) {
@@ -125,6 +183,7 @@ export default function ClasesAdminPage() {
       toast.error(msg);
       console.error('Error al agregar clase:', err);
     }
+    setUploading(false);
   };
 
   const handleDeleteClase = async (id: string) => {
@@ -144,6 +203,14 @@ export default function ClasesAdminPage() {
       toast.error('Error al eliminar la clase');
       console.error('Error al eliminar clase:', err);
     }
+  };
+
+  const handleCancelModal = () => {
+    setAddDialogOpen(false);
+    setSelectedImage(null);
+    setForm({
+      nombre: '', descripcion: '', intensidad: 'Media', instructor: '', horarios: [{ fecha: '', horaInicio: '', horaFin: '' }], duracion: '', capacidad: 0, tipo: 'Yoga', grupo_musculo: 'Pierna', sub_musculo: 'Abdominal', sede: '', imageUrl: '',
+    });
   };
 
 
@@ -170,50 +237,130 @@ export default function ClasesAdminPage() {
                 </div>
                 {addDialogOpen && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-                    <div className="bg-gray-900 border border-[#fee600] rounded-xl p-8 w-full max-w-2xl shadow-xl">
-                      <h2 className="text-xl font-bold text-[#fee600] mb-4">Agregar Nueva Clase</h2>
+                    <div className="bg-gray-900 border border-[#fee600] rounded-xl p-6 w-full max-w-2xl shadow-xl">
+                      <h2 className="text-xl font-bold text-[#fee600] mb-3">Agregar Nueva Clase</h2>
                       <form onSubmit={handleAddClase} className="grid grid-cols-2 gap-4">
-                        <input type="text" name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full col-span-2" required />
-                        <input type="text" name="instructor" placeholder="Instructor" value={form.instructor} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
-                        <select name="sede" value={form.sede} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full">
-                          <option value="">Sede</option>
-                          {options.sede.map((v, i) => (
-                            <option key={v + '-' + i} value={v}>{v}</option>
-                          ))}
-                        </select>
-                        <input type="number" name="capacidad" placeholder="Capacidad" value={form.capacidad || ''} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
-                        <input type="text" name="duracion" placeholder="Duración (ej: 60min)" value={form.duracion} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
-                        <input type="date" name="horarios.fecha" placeholder="Fecha" value={form.horarios[0].fecha} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
-                        <input type="time" name="horarios.horaInicio" placeholder="Hora inicio" value={form.horarios[0].horaInicio} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
-                        <input type="time" name="horarios.horaFin" placeholder="Hora fin" value={form.horarios[0].horaFin} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
-                        <select name="intensidad" value={form.intensidad} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full">
-                          <option value="">Intensidad</option>
-                          {options.intensidad.map((v, i) => (
-                            <option key={v + '-' + i} value={v}>{v}</option>
-                          ))}
-                        </select>
-                        <select name="tipo" value={form.tipo} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full">
-                          <option value="">Tipo</option>
-                          {options.tipo.map((v, i) => (
-                            <option key={v + '-' + i} value={v}>{v}</option>
-                          ))}
-                        </select>
-                        <select name="grupo_musculo" value={form.grupo_musculo} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full">
-                          <option value="">Grupo muscular</option>
-                          {options.grupo_musculo.map((v, i) => (
-                            <option key={v + '-' + i} value={v}>{v}</option>
-                          ))}
-                        </select>
-                        <select name="sub_musculo" value={form.sub_musculo} onChange={handleChange} className={`border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full ${!form.grupo_musculo ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!form.grupo_musculo}>
-                          <option value="">Sub-músculo</option>
-                          {options.sub_musculo.map((v, i) => (
-                            <option key={v + '-' + i} value={v}>{v}</option>
-                          ))}
-                        </select>
-                        <textarea name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange} rows={3} className="border border-[#fee600] bg-black text-white px-2 py-2 rounded w-full col-span-2" required />
-                        <div className="col-span-2 flex justify-end gap-2 mt-2">
-                          <button type="button" className="bg-gray-700 text-white px-4 py-2 rounded font-bold border border-gray-700 cursor-pointer" onClick={() => setAddDialogOpen(false)}>Cancelar</button>
-                          <button type="submit" className="bg-[#fee600] text-black px-4 py-2 rounded font-bold border border-[#fee600] cursor-pointer">Agregar</button>
+                        <div className="col-span-2">
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Nombre de la clase</label>
+                          <input type="text" name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Instructor</label>
+                          <input type="text" name="instructor" placeholder="Instructor" value={form.instructor} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Sede</label>
+                          <select name="sede" value={form.sede} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full">
+                            <option value="">Sede</option>
+                            {options.sede.map((v, i) => (
+                              <option key={v + '-' + i} value={v}>{v}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Capacidad</label>
+                          <input type="number" name="capacidad" placeholder="Capacidad" value={form.capacidad || ''} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Duración</label>
+                          <input type="text" name="duracion" placeholder="Duración (ej: 60min)" value={form.duracion} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Fecha</label>
+                          <input type="date" name="horarios.fecha" placeholder="Fecha" value={form.horarios[0].fecha} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Hora inicio</label>
+                          <input type="time" name="horarios.horaInicio" placeholder="Hora inicio" value={form.horarios[0].horaInicio} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Hora fin</label>
+                          <input type="time" name="horarios.horaFin" placeholder="Hora fin" value={form.horarios[0].horaFin} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full" required />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Intensidad</label>
+                          <select name="intensidad" value={form.intensidad} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full">
+                            <option value="">Intensidad</option>
+                            {options.intensidad.map((v, i) => (
+                              <option key={v + '-' + i} value={v}>{v}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Tipo</label>
+                          <select name="tipo" value={form.tipo} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full">
+                            <option value="">Tipo</option>
+                            {options.tipo.map((v, i) => (
+                              <option key={v + '-' + i} value={v}>{v}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Grupo muscular</label>
+                          <select name="grupo_musculo" value={form.grupo_musculo} onChange={handleChange} className="border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full">
+                            <option value="">Grupo muscular</option>
+                            {options.grupo_musculo.map((v, i) => (
+                              <option key={v + '-' + i} value={v}>{v}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Sub-músculo</label>
+                          <select name="sub_musculo" value={form.sub_musculo} onChange={handleChange} className={`border border-[#fee600] bg-black text-white px-2 py-1 rounded w-full ${!form.grupo_musculo ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!form.grupo_musculo}>
+                            <option value="">Sub-músculo</option>
+                            {options.sub_musculo.map((v, i) => (
+                              <option key={v + '-' + i} value={v}>{v}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        {/* Campo de imagen */}
+                        <div>
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">
+                            Imagen de la clase
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="block w-full text-sm text-gray-300
+                              file:mr-4 file:py-1 file:px-2
+                              file:rounded file:border-0
+                              file:text-xs file:font-semibold
+                              file:bg-[#fee600] file:text-black
+                              hover:file:bg-yellow-400 file:cursor-pointer"
+                          />
+                        </div>
+                        
+                        <div className="col-span-2">
+                          <label className="block text-[#fee600] text-xs font-semibold mb-1">Descripción</label>
+                          <textarea name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange} rows={3} className="border border-[#fee600] bg-black text-white px-2 py-2 rounded w-full" required />
+                        </div>
+
+                        <div className="col-span-2 flex justify-end gap-2 mt-1">
+                          <button type="button" className="bg-gray-700 text-white px-4 py-2 rounded font-bold border border-gray-700 cursor-pointer" onClick={handleCancelModal}>Cancelar</button>
+                          <button 
+                            type="submit" 
+                            disabled={uploading}
+                            className={`px-4 py-2 rounded font-bold border transition-colors ${
+                              uploading 
+                                ? 'bg-gray-500 text-gray-300 border-gray-500 cursor-not-allowed' 
+                                : 'bg-[#fee600] text-black border-[#fee600] cursor-pointer hover:bg-yellow-400'
+                            }`}
+                          >
+                            {uploading ? 'Subiendo...' : 'Agregar'}
+                          </button>
                         </div>
                       </form>
                     </div>
@@ -229,6 +376,19 @@ export default function ClasesAdminPage() {
                       clases.map((clase) => (
                         <div key={clase.id} className="bg-gray-900 rounded-xl border border-[#fee600] shadow p-4 flex flex-col justify-between">
                           <div>
+                            {/* Imagen de la clase */}
+                            {clase.imageUrl && (
+                              <div className="mb-3">
+                                <Image
+                                  src={clase.imageUrl}
+                                  alt={clase.nombre}
+                                  width={200}
+                                  height={120}
+                                  className="w-full h-32 object-cover rounded-lg border border-[#fee600]"
+                                />
+                              </div>
+                            )}
+                            
                             <a
                               href={`/clases/${clase.id}`}
                               className="text-lg font-bold text-[#fee600] mb-2 hover:underline cursor-pointer"

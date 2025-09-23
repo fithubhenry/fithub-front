@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import type { TurnoDTO } from "@/services/turnos";
 import { getTurnosDesdeUsuario, cancelarTurno } from "@/services/turnos";
 import { toast } from "react-toastify";
+import Loader from "@/components/Loader/Loader";
 
 export default function MisTurnosPage() {
   const { user } = useAuth();
@@ -83,7 +84,7 @@ export default function MisTurnosPage() {
           <div className="mt-4 text-center">
             <Link
               href="/pago"
-              className="inline-block rounded-lg border border-[#fee600] text-[#fee600] px-4 py-2 font-semibold hover:bg-[#fee600] hover:text-black transition"
+              className="inline-block rounded-lg border border-[#fee600] text-[#fee600] px-4 py-2 font-semibold hover:bg-[#fee600] hover:text-black transition cursor-pointer"
             >
               Hazte premium
             </Link>
@@ -92,7 +93,11 @@ export default function MisTurnosPage() {
       </div>
     );
   }
-  if (loading) return <div className="min-h-screen bg-black pt-20 px-6 text-[#fee600]">Cargando tus turnos…</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-black pt-20 px-6">
+      <Loader text="Cargando tus turnos..." />
+    </div>
+  );
   if (err) return <div className="min-h-screen bg-black pt-20 px-6 text-red-300">Error: {err}</div>;
 
   // === UI principal ===

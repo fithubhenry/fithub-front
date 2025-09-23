@@ -28,15 +28,25 @@ export default function ProfileView() {
   }, [user?.profileImageUrl]);
 
   // Etiqueta legible según el rol
-  const etiquetaPorRol: Record<"guest" | "registered" | "premium", string> = {
+  const etiquetaPorRol: Record<"guest" | "registered" | "premium" | "admin", string> = {
     guest: "Invitado",
     registered: "Registrado",
     premium: "Premium",
+    admin: "Admin",
   };
 
   const esInvitado = !isAuthenticated;
   const esRegistrado = isAuthenticated && user?.estado === "Invitado";
   const esPremium = isAuthenticated && user?.estado === "Activo";
+  const esAdmin = isAuthenticated && user?.esAdmin;
+
+  // Función para obtener el rol del usuario
+  const obtenerRolUsuario = () => {
+    if (esInvitado) return "guest";
+    if (esAdmin) return "admin";
+    if (esPremium) return "premium";
+    return "registered";
+  };
 
   // Subida al backend
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -142,23 +152,15 @@ export default function ProfileView() {
           <div className="ml-auto flex items-center gap-2">
             <span
               className={`text-xs px-2 py-1 rounded-full ${
-                esPremium
+                esAdmin
+                  ? "bg-red-500/20 text-red-300"
+                  : esPremium
                   ? "bg-emerald-500/20 text-emerald-300"
                   : "bg-slate-700 text-gray-300 border border-slate-600"
               }`}
             >
-              {etiquetaPorRol[esInvitado ? "guest" : esPremium ? "premium" : "registered"]}
+              {etiquetaPorRol[obtenerRolUsuario()]}
             </span>
-
-            {/* 👉 Botón visible solo si es Premium */}
-            {esPremium && (
-              <Link
-                href="/misTurnos"
-                className="px-3 py-1 rounded-lg border border-[#fee600] text-[#fee600] font-semibold hover:bg-[#fee600] hover:text-black transition-colors duration-200"
-              >
-                Mis turnos
-              </Link>
-            )}
           </div>
         </div>
 
@@ -183,7 +185,7 @@ export default function ProfileView() {
             </p>
             <Link
               href="/login"
-              className="inline-block mt-3 rounded-lg bg-[#fee600] px-4 py-2 font-semibold text-black hover:bg-yellow-400 transition-colors duration-200"
+              className="inline-block mt-3 rounded-lg bg-[#fee600] px-4 py-2 font-semibold text-black hover:bg-yellow-400 transition-colors duration-200 cursor-pointer"
             >
               Iniciar sesión
             </Link>
@@ -210,18 +212,28 @@ export default function ProfileView() {
                 className={`mt-3 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
                   esInvitado
                     ? "bg-gray-600 cursor-not-allowed text-gray-300 "
-                    : "bg-[#fee600] text-black hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fee600] shadow-lg hover:shadow-xl"
+                    : "bg-[#fee600] text-black hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fee600] shadow-lg hover:shadow-xl cursor-pointer"
                 }`}
                 disabled={esInvitado}
               >
                 Guardar cambios
               </button>
 
+              {/* Enlace Mis turnos para usuarios premium (pero NO para administradores) */}
+              {esPremium && !user?.esAdmin && (
+                <Link
+                  href="/misTurnos"
+                  className="mt-3 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 border border-[#fee600] text-[#fee600] hover:bg-[#fee600] hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fee600] cursor-pointer"
+                >
+                  Mis turnos
+                </Link>
+              )}
+
               {/* Sugerencia de upgrade para usuarios registrados */}
               {esRegistrado && (
                 <Link
                   href="/pago"
-                  className="mt-3 px-4 py-2 rounded-lg border border-[#fee600] text-[#fee600] font-semibold hover:bg-[#fee600] hover:text-black transition-colors duration-200"
+                  className="mt-3 px-4 py-2 rounded-lg border border-[#fee600] text-[#fee600] font-semibold hover:bg-[#fee600] hover:text-black transition-colors duration-200 cursor-pointer"
                 >
                   Hazte premium
                 </Link>

@@ -5,6 +5,8 @@ import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/footer/footer";
 import { Slide, ToastContainer } from "react-toastify";
 import { AuthProvider } from "@/context/AuthContext";
+import 'leaflet/dist/leaflet.css';
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
