@@ -21,7 +21,15 @@ const api = {
   get: async (path: string) => {
     const res = await fetch(BASE_URL + path, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error("Error en GET " + path);
-    return res.json();
+    
+    // Verificar el tipo de contenido de la respuesta
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return res.json();
+    } else {
+      // Si no es JSON, devolver el texto
+      return res.text();
+    }
   },
   post: async (path: string, body: any) => {
     const res = await fetch(BASE_URL + path, {
@@ -30,7 +38,15 @@ const api = {
       body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error("Error en POST " + path);
-    return res.json();
+    
+    // Verificar el tipo de contenido de la respuesta
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return res.json();
+    } else {
+      // Si no es JSON, devolver el texto
+      return res.text();
+    }
   },
   patch: async (path: string, body: any) => {
     const res = await fetch(BASE_URL + path, {
@@ -39,7 +55,15 @@ const api = {
       body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error("Error en PATCH " + path);
-    return res.json();
+    
+    // Verificar el tipo de contenido de la respuesta
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return res.json();
+    } else {
+      // Si no es JSON, devolver el texto
+      return res.text();
+    }
   },
   delete: async (path: string) => {
     const res = await fetch(BASE_URL + path, {
