@@ -32,11 +32,6 @@ export default function UsuariosAdminPage() {
         setLoading(true);
         const data = await api.get("/users");
         
-        // 🔍 DEBUG: Ver qué datos llegan del backend
-        console.log("🔍 DEBUG - Datos raw del backend:", data);
-        console.log("🔍 DEBUG - Primer usuario completo:", data[0]);
-        console.log("🔍 DEBUG - HistorialPagos del primer usuario:", data[0]?.historialPagos);
-        
         const mapped = data.map((user: any) => ({
           id: user.id,
           name: user.nombre && user.apellido ? `${user.nombre} ${user.apellido}` : user.apellido_nombre || user.nombre || "",
@@ -53,7 +48,7 @@ export default function UsuariosAdminPage() {
         
         setUsers(mapped);
       } catch {
-        console.error("Error al cargar usuarios");
+        // Error silencioso, no mostrar en consola en producción
       } finally {
         setLoading(false);
       }
@@ -110,7 +105,7 @@ export default function UsuariosAdminPage() {
       setUsers(mapped);
       setEditingId(null);
     } catch {
-      console.error("Error al guardar los cambios");
+      // Error silencioso, no mostrar en consola en producción
     }
   };
 
@@ -407,6 +402,8 @@ export default function UsuariosAdminPage() {
                                   onClick={async () => {
                                     try {
                                       const res = await api.get(`/users/admin/new/${user.id}`);
+                                      
+                                      // Recargar la lista de usuarios
                                       const data = await api.get("/users");
                                       const mapped = data.map((u: any) => ({
                                         id: u.id,
@@ -422,7 +419,9 @@ export default function UsuariosAdminPage() {
                                           : null,
                                       }));
                                       setUsers(mapped);
-                                      toast.success(typeof res === "string" ? res : "Usuario convertido a admin");
+                                      
+                                      // Mostrar mensaje de éxito (usando la respuesta del servidor o mensaje por defecto)
+                                      toast.success(typeof res === "string" ? res : "Usuario convertido a admin correctamente");
                                     } catch {
                                       toast.error("No se pudo convertir a admin");
                                     }
@@ -436,6 +435,8 @@ export default function UsuariosAdminPage() {
                                   onClick={async () => {
                                     try {
                                       const res = await api.get(`/users/admin/delete/${user.id}`);
+                                      
+                                      // Recargar la lista de usuarios
                                       const data = await api.get("/users");
                                       const mapped = data.map((u: any) => ({
                                         id: u.id,
@@ -451,7 +452,9 @@ export default function UsuariosAdminPage() {
                                           : null,
                                       }));
                                       setUsers(mapped);
-                                      toast.success(typeof res === "string" ? res : "Usuario ahora es usuario normal");
+                                      
+                                      // Mostrar mensaje de éxito (usando la respuesta del servidor o mensaje por defecto)
+                                      toast.success(typeof res === "string" ? res : "Rol de administrador removido correctamente");
                                     } catch {
                                       toast.error("No se pudo quitar el rol de admin");
                                     }
