@@ -17,43 +17,26 @@ export default function UsuariosAdminPage() {
     setInactiveEdits(prev => ({ ...prev, [id]: value }));
   };
 
-  // Cambiar estado de usuario inactivo a invitado
-  const handleSetInvitado = async (id: string) => {
-    try {
-      await api.patch(`/users/${id}`, { estado: 'Invitado' });
-      const data = await api.get('/users');
-      const mapped = data.map((user: any) => ({
-        id: user.id,
-        name: user.nombre && user.apellido ? `${user.nombre} ${user.apellido}` : user.apellido_nombre || user.nombre || "",
-        email: user.email,
-        role: user.esAdmin ? "Admin" : "Usuario",
-        estado: user.estado,
-        imageUrl: user.profileImageUrl || null,
-        telefono: user.telefono || null,
-      }));
-      setUsers(mapped);
-      toast.success("Usuario actualizado a Invitado");
-    } catch {
-      toast.error("No se pudo actualizar el usuario");
-    }
-  }
   const [showInactiveModal, setShowInactiveModal] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
   const [editRole, setEditRole] = useState<"Admin" | "Usuario">("Usuario");
-  const [showInactive, setShowInactive] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
         const data = await api.get("/users");
+        
+        // 🔍 DEBUG: Ver qué datos llegan del backend
+        console.log("🔍 DEBUG - Datos raw del backend:", data);
+        console.log("🔍 DEBUG - Primer usuario completo:", data[0]);
+        console.log("🔍 DEBUG - HistorialPagos del primer usuario:", data[0]?.historialPagos);
+        
         const mapped = data.map((user: any) => ({
           id: user.id,
           name: user.nombre && user.apellido ? `${user.nombre} ${user.apellido}` : user.apellido_nombre || user.nombre || "",
@@ -62,11 +45,15 @@ export default function UsuariosAdminPage() {
           estado: user.estado,
           imageUrl: user.profileImageUrl || null,
           telefono: user.telefono || null,
+          historialPagos: user.historialPagos || [],
+          ultimoPago: user.historialPagos && user.historialPagos.length > 0 
+            ? new Date(user.historialPagos[user.historialPagos.length - 1].dateApproved).toLocaleDateString('es-ES')
+            : null,
         }));
+        
         setUsers(mapped);
-        setError(null);
       } catch {
-        setError("Error al cargar usuarios");
+        console.error("Error al cargar usuarios");
       } finally {
         setLoading(false);
       }
@@ -86,19 +73,16 @@ export default function UsuariosAdminPage() {
         estado: user.estado,
         imageUrl: user.profileImageUrl || null,
         telefono: user.telefono || null,
+        historialPagos: user.historialPagos || [],
+        ultimoPago: user.historialPagos && user.historialPagos.length > 0 
+          ? new Date(user.historialPagos[user.historialPagos.length - 1].dateApproved).toLocaleDateString('es-ES')
+          : null,
       }));
       setUsers(mapped);
       toast.success("Usuario eliminado correctamente");
-    } catch (err) {
+    } catch {
       toast.error("Error al eliminar usuario");
     }
-  };
-
-  const handleEdit = (user: any) => {
-    setEditingId(user.id);
-    setEditName(user.name);
-    setEditEmail(user.email);
-    setEditRole(user.role);
   };
 
   const handleSave = async (id: string) => {
@@ -107,7 +91,6 @@ export default function UsuariosAdminPage() {
       await api.patch(`/users/${id}`, {
         nombre: editName.split(" ")[0] || "",
         apellido: editName.split(" ").slice(1).join(" ") || "",
-        email: editEmail,
         esAdmin,
       });
       const data = await api.get("/users");
@@ -117,11 +100,17 @@ export default function UsuariosAdminPage() {
         email: user.email,
         role: user.esAdmin ? "Admin" : "Usuario",
         estado: user.estado || "Activo",
+        imageUrl: user.profileImageUrl || null,
+        telefono: user.telefono || null,
+        historialPagos: user.historialPagos || [],
+        ultimoPago: user.historialPagos && user.historialPagos.length > 0 
+          ? new Date(user.historialPagos[user.historialPagos.length - 1].dateApproved).toLocaleDateString('es-ES')
+          : null,
       }));
       setUsers(mapped);
       setEditingId(null);
     } catch {
-      setError("Error al guardar los cambios");
+      console.error("Error al guardar los cambios");
     }
   };
 
@@ -273,8 +262,6 @@ export default function UsuariosAdminPage() {
                       return;
                     }
                     const promises = usersToUpdate.map(user => {
-                      const nuevoEstado = inactiveEdits[user.id];
-    
                       const partes = user.name ? user.name.split(' ') : [];
                       const nombre = partes[0] || '';
                       const apellido = partes.slice(1).join(' ') || '';
@@ -295,6 +282,10 @@ export default function UsuariosAdminPage() {
                         estado: user.estado,
                         imageUrl: user.profileImageUrl || null,
                         telefono: user.telefono || null,
+                        historialPagos: user.historialPagos || [],
+                        ultimoPago: user.historialPagos && user.historialPagos.length > 0 
+                          ? new Date(user.historialPagos[user.historialPagos.length - 1].dateApproved).toLocaleDateString('es-ES')
+                          : null,
                       }));
                       setUsers(mapped);
                       toast.success("Cambios guardados correctamente");
@@ -330,7 +321,7 @@ export default function UsuariosAdminPage() {
                     <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Rol</th>
                     <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Estado</th>
                     <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Teléfono</th>
-                    <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Pagos</th>
+                    <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Último Pago</th>
                     <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Acciones</th>
                   </tr>
                 </thead>
@@ -387,7 +378,7 @@ export default function UsuariosAdminPage() {
                       </td>
                       <td className="px-4 py-3 border-b border-[#fee600] text-center">
                         <span className="px-3 py-1 rounded-full font-semibold text-black bg-[#fee600] text-xs">
-                          {user.pagos ? user.pagos : '-'}
+                          {user.ultimoPago ? user.ultimoPago : 'Sin pagos'}
                         </span>
                       </td>
                       <td className="px-4 py-3 border-b border-[#fee600] text-center">
@@ -425,6 +416,10 @@ export default function UsuariosAdminPage() {
                                         estado: u.estado,
                                         imageUrl: u.profileImageUrl || null,
                                         telefono: u.telefono || null,
+                                        historialPagos: u.historialPagos || [],
+                                        ultimoPago: u.historialPagos && u.historialPagos.length > 0 
+                                          ? new Date(u.historialPagos[u.historialPagos.length - 1].dateApproved).toLocaleDateString('es-ES')
+                                          : null,
                                       }));
                                       setUsers(mapped);
                                       toast.success(typeof res === "string" ? res : "Usuario convertido a admin");
@@ -450,6 +445,10 @@ export default function UsuariosAdminPage() {
                                         estado: u.estado,
                                         imageUrl: u.profileImageUrl || null,
                                         telefono: u.telefono || null,
+                                        historialPagos: u.historialPagos || [],
+                                        ultimoPago: u.historialPagos && u.historialPagos.length > 0 
+                                          ? new Date(u.historialPagos[u.historialPagos.length - 1].dateApproved).toLocaleDateString('es-ES')
+                                          : null,
                                       }));
                                       setUsers(mapped);
                                       toast.success(typeof res === "string" ? res : "Usuario ahora es usuario normal");

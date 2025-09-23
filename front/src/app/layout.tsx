@@ -3,6 +3,7 @@ import { Anton, Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/footer/footer";
+import Chat from "@/components/Chat";
 import { Slide, ToastContainer } from "react-toastify";
 import { AuthProvider } from "@/context/AuthContext";
 import 'leaflet/dist/leaflet.css';
@@ -49,6 +50,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
 
           <Footer />
+          <Chat />
           <ToastContainer
             position="bottom-center"
             autoClose={2000}
