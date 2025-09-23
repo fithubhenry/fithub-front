@@ -12,8 +12,8 @@ function decodeToken(token: string) {
   }
 }
 
-const protectedRoutes = ["/dashboard", "/clases", "/profile"];
-const adminRoutes = ["/admin", "/usuarios", "/clases"];
+const protectedRoutes = ["/dashboard", "/clases", "/profile","misTurnos"];
+const adminRoutes = ["/admin", "/usuarios"];
 const guestOnlyRoutes = ["/login", "/register"];
 
 export function middleware(request: NextRequest) {
