@@ -2,22 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Cookies from 'js-cookie';
+
 import apiClases from '@/services/apiClases';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { IClase } from '@/types';
-import { useAuth } from '@/context/AuthContext';
+
 
 export default function ClasesAdminPage() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const { user } = useAuth();
+
   
   const [clases, setClases] = useState<IClase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   useEffect(() => {
     const fetchClases = async () => {
@@ -82,39 +81,9 @@ export default function ClasesAdminPage() {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-    }
-  };
 
-  const uploadImageToCloudinary = async (file: File): Promise<string | null> => {
-    if (!user?.userId) return null;
-    
-    const formData = new FormData();
-    formData.append("file", file);
-    
-    try {
-      const token = Cookies.get("token");
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/profile-image/${user.userId}`,
-        { 
-          method: "PATCH", 
-          headers: token ? { Authorization: `Bearer ${token}` } : {}, 
-          body: formData 
-        }
-      );
-      
-      if (!res.ok) throw new Error("Error al subir la imagen");
-      
-      const data = await res.json();
-      return data.imageUrl || null;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      return null;
-    }
-  };
+
+
 
   const handleAddClase = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,26 +97,6 @@ export default function ClasesAdminPage() {
     
     setUploading(true);
     try {
-      let imageUrl = '';
-      
-      // Si hay una imagen seleccionada, subirla primero
-      if (selectedImage) {
-        const uploadedImageUrl = await uploadImageToCloudinary(selectedImage);
-        if (uploadedImageUrl) {
-          imageUrl = uploadedImageUrl;
-        } else {
-          toast.error('Error al subir la imagen');
-          setUploading(false);
-          return;
-        }
-      }
-      
-      const payload = {
-        ...form,
-        grupo_musculo: [form.grupo_musculo],
-        sub_musculo: [form.sub_musculo],
-        imageUrl: imageUrl, // Incluir la URL de la imagen subida
-      };
       // Formatear horaInicio y horaFin a HH:mm:ss
       const formatHora = (h: string) => h && h.length === 5 ? h + ':00' : h;
       const horarios = [{
@@ -155,7 +104,21 @@ export default function ClasesAdminPage() {
         horaInicio: formatHora(form.horarios[0].horaInicio),
         horaFin: formatHora(form.horarios[0].horaFin),
       }];
-      payload.horarios = horarios;
+
+      const payload = {
+        nombre: form.nombre,
+        descripcion: form.descripcion,
+        intensidad: form.intensidad,
+        instructor: form.instructor,
+        duracion: form.duracion,
+        capacidad: form.capacidad,
+        tipo: form.tipo,
+        grupo_musculo: [form.grupo_musculo],
+        sub_musculo: [form.sub_musculo],
+        sede: form.sede,
+        horarios: horarios,
+        imageUrl: '', // Sin imagen
+      };
 
       console.log('Payload a enviar:', payload);
       const nuevaClase = await apiClases.post('/clases', payload);
@@ -164,7 +127,7 @@ export default function ClasesAdminPage() {
       setForm({
         nombre: '', descripcion: '', intensidad: 'Media', instructor: '', horarios: [{ fecha: '', horaInicio: '', horaFin: '' }], duracion: '', capacidad: 0, tipo: 'Yoga', grupo_musculo: 'Pierna', sub_musculo: 'Abdominal', sede: '', imageUrl: '',
       });
-      setSelectedImage(null);
+
       toast.success('Clase agregada correctamente');
       setAddDialogOpen(false);
     } catch (err: any) {
@@ -207,7 +170,7 @@ export default function ClasesAdminPage() {
 
   const handleCancelModal = () => {
     setAddDialogOpen(false);
-    setSelectedImage(null);
+
     setForm({
       nombre: '', descripcion: '', intensidad: 'Media', instructor: '', horarios: [{ fecha: '', horaInicio: '', horaFin: '' }], duracion: '', capacidad: 0, tipo: 'Yoga', grupo_musculo: 'Pierna', sub_musculo: 'Abdominal', sede: '', imageUrl: '',
     });
@@ -323,24 +286,6 @@ export default function ClasesAdminPage() {
                               <option key={v + '-' + i} value={v}>{v}</option>
                             ))}
                           </select>
-                        </div>
-                        
-                        {/* Campo de imagen */}
-                        <div>
-                          <label className="block text-[#fee600] text-xs font-semibold mb-1">
-                            Imagen de la clase
-                          </label>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="block w-full text-sm text-gray-300
-                              file:mr-4 file:py-1 file:px-2
-                              file:rounded file:border-0
-                              file:text-xs file:font-semibold
-                              file:bg-[#fee600] file:text-black
-                              hover:file:bg-yellow-400 file:cursor-pointer"
-                          />
                         </div>
                         
                         <div className="col-span-2">
