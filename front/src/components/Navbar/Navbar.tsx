@@ -88,7 +88,7 @@ export default function Navbar() {
               </Link>
             )}
 
-            {isRegistered && (
+            {isRegistered && !user?.esAdmin && (
               <Link href="/pago">
                 <p className="text-[#fee600] font-poppins hover:text-primary transition-colors duration-200">
                   Hazte premium
@@ -140,10 +140,21 @@ export default function Navbar() {
                 <p className="block px-3 py-2 text-[#fee600] hover:text-primary transition">Inicio</p>
               </Link>
 
-              {!isGuest && (
-                <Link href="/clases" onClick={toggleMenu}>
-                  <p className="block px-3 py-2 text-[#fee600] hover:text-primary transition">Clases</p>
-                </Link>
+              {user?.esAdmin ? (
+                <>
+                  <Link href="/admin/clases" onClick={toggleMenu}>
+                    <p className="block px-3 py-2 text-[#fee600] hover:text-primary transition">Clases</p>
+                  </Link>
+                  <Link href="/admin/usuarios" onClick={toggleMenu}>
+                    <p className="block px-3 py-2 text-[#fee600] hover:text-primary transition">Usuarios</p>
+                  </Link>
+                </>
+              ) : (
+                !isGuest && (
+                  <Link href="/clases" onClick={toggleMenu}>
+                    <p className="block px-3 py-2 text-[#fee600] hover:text-primary transition">Clases</p>
+                  </Link>
+                )
               )}
 
               {!isGuest && (
@@ -152,7 +163,7 @@ export default function Navbar() {
                 </Link>
               )}
 
-              {isRegistered && (
+              {isRegistered && !user?.esAdmin && (
                 <Link href="/pago" onClick={toggleMenu}>
                   <p className="block px-3 py-2 text-[#fee600] hover:text-primary transition">Hazte premium</p>
                 </Link>

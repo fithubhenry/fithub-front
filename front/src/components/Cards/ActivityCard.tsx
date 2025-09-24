@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
-import TurnosService from "@/services/turnos";
 
 
 type HorarioOk = { fecha: string; horaInicio: string; horaFin: string };
@@ -63,81 +62,62 @@ async function manejarClick(e: React.MouseEvent<HTMLButtonElement>) {
   if (esInvitado) return router.push("/login");
   if (esRegistrado) return; // solo premium puede reservar
 
-  try {
-    const usuarioId = (user as any)?.userId ?? (user as any)?.id ?? (user as any)?.sub;
-
-    // ✅ usar un horario FUTURO si viene del back
-    const validos = Array.isArray(horarios) ? (horarios as any[]).filter(isHorarioOk).filter(esFuturo) : [];
-    if (validos.length === 0) {
-      // si no hay horarios válidos, vamos al detalle para elegir
-      return router.push(`/clases/${id}#reservar`);
-    }
-
-    const h = validos[0];
-    await TurnosService.crear({
-      usuarioId,
-      claseId: id,
-      fecha: h.fecha,
-      horaInicio: h.horaInicio,
-      horaFin: h.horaFin,
-    });
-
-    toast.success("¡Reserva realizada!");
-    router.push("/misTurnos");
-  } catch (err: any) {
-    toast.error(err?.message ?? "No se pudo reservar");
-  }
+  // Siempre redirigir a la página de detalle para seleccionar horario
+  toast.info(`Ve los horarios disponibles para ${nombre} y selecciona el que prefieras.`);
+  return router.push(`/clases/${id}`);
 }
 
 
 
 
   return (
-    <Link
-      href={`/clases/${id}`}
-      className="group rounded-xl border border-border/60 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden block"
-    >
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={imageUrl || "/placeholder.svg"}
-
-          alt={nombre}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-          onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
-        />
-        <div className="absolute inset-0 bg-black/20 transition-colors duration-300 group-hover:bg-black/10" />
-      </div>
-
-      <div className="p-4 space-y-4">
-        <div>
-          <h3 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors">
-            {nombre}
-          </h3>
-          <p className="text-sm text-muted-foreground line-clamp-2">{descripcion}</p>
+    <div className="group rounded-xl border border-border/60 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+      {/* Imagen y contenido clickeable para ir al detalle */}
+      <Link href={`/clases/${id}`} className="block">
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={imageUrl || "/placeholder.svg"}
+            alt={nombre}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
+          />
+          <div className="absolute inset-0 bg-black/20 transition-colors duration-300 group-hover:bg-black/10" />
         </div>
 
-        <div className="flex justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4" />
-            <span>{duracion}</span>
+        <div className="p-4 space-y-4">
+          <div>
+            <h3 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors">
+              {nombre}
+            </h3>
+            <p className="text-sm text-muted-foreground line-clamp-2">{descripcion}</p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Users className="h-4 w-4" />
-            <span>{participantes} inscriptos</span>
+
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              <span>{duracion}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Users className="h-4 w-4" />
+              <span>{participantes} inscriptos</span>
+            </div>
+          </div>
+
+          <div className="mt-1">
+            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${estilosIntensidad[intensidad]}`}>
+              Intensidad: {intensidad}
+            </span>
           </div>
         </div>
+      </Link>
 
-        <div className="mt-1">
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${estilosIntensidad[intensidad]}`}>
-            Intensidad: {intensidad}
-          </span>
-        </div>
-
+      {/* Botón de reserva fuera del Link para evitar conflictos */}
+      <div className="px-4 pb-4">
         <button
           type="button"
           onClick={manejarClick}
           disabled={deshabilitado}
-          className={`mt-3 w-full rounded-md px-4 py-2.5 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 ${
+          className={`w-full rounded-md px-4 py-2.5 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition-colors ${
             deshabilitado
               ? "bg-neutral-300 text-neutral-500 cursor-not-allowed"
               : "bg-black text-[#fee600] border border-[#fee600] hover:bg-[#fee600] hover:text-black cursor-pointer"
@@ -146,7 +126,7 @@ async function manejarClick(e: React.MouseEvent<HTMLButtonElement>) {
           {textoBoton}
         </button>
       </div>
-    </Link>
+    </div>
   );
 }
 

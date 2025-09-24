@@ -107,7 +107,7 @@ const Chat: React.FC<ChatProps> = ({ className = '' }) => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-300 z-50"
+        className="fixed bottom-6 right-6 bg-[#fee600] hover:bg-[#fee600] text-black rounded-full p-4 shadow-lg transition-all duration-300 z-[9999]"
         aria-label="Abrir chat"
       >
         <MessageCircle size={24} />
@@ -116,19 +116,19 @@ const Chat: React.FC<ChatProps> = ({ className = '' }) => {
   }
 
   return (
-    <div className={`fixed bottom-6 right-6 bg-white rounded-lg shadow-2xl border border-gray-200 w-96 h-[500px] flex flex-col z-50 ${className}`}>
+    <div className={`fixed bottom-6 right-6 bg-white rounded-lg shadow-2xl border border-black w-96 h-[500px] flex flex-col z-[9999] ${className}`}>
       {/* Header */}
-      <div className="bg-blue-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+      <div className="bg-[#fee600] text-black p-4 rounded-t-lg flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Bot size={20} />
           <h3 className="font-semibold">Asistente FitHub</h3>
         </div>
         <button
           onClick={() => setIsOpen(false)}
-          className="hover:bg-blue-700 rounded-full p-1 transition-colors"
+          className="hover:bg-black rounded-full p-1 transition-colors"
           aria-label="Cerrar chat"
         >
-          <X size={18} />
+          <X size={18} className="hover:text-white" />
         </button>
       </div>
 
@@ -142,7 +142,7 @@ const Chat: React.FC<ChatProps> = ({ className = '' }) => {
             <div
               className={`max-w-[80%] p-3 rounded-lg ${
                 message.isUser
-                  ? 'bg-blue-600 text-white rounded-br-none'
+                  ? 'bg-[#fee600] text-white rounded-br-none'
                   : 'bg-gray-100 text-gray-800 rounded-bl-none'
               }`}
             >
@@ -193,13 +193,13 @@ const Chat: React.FC<ChatProps> = ({ className = '' }) => {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Escribe tu mensaje..."
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#fee600] focus:border-transparent"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={!inputMessage.trim() || isLoading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2 transition-colors"
+            className="bg-[#fee600] hover:bg-[#fcd200] disabled:bg-black disabled:text-white disabled:cursor-not-allowed text-black rounded-lg px-4 py-2 transition-colors"
             aria-label="Enviar mensaje"
           >
             <Send size={18} />

@@ -1,11 +1,10 @@
-// src/app/misTurnos/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import type { TurnoDTO } from "@/services/turnos";
-import { getTurnosDesdeUsuario, cancelarTurno } from "@/services/turnos";
+import { getTurnosDesdeUsuario, getTurnosDesdeUsuarioFallback, cancelarTurno } from "@/services/turnos";
 import { toast } from "react-toastify";
 import Loader from "@/components/Loader/Loader";
 
@@ -24,8 +23,18 @@ export default function MisTurnosPage() {
       return;
     }
     getTurnosDesdeUsuario(user.userId)
-      .then(setTurnos)
-      .catch((e) => setErr(e.message ?? "Error"))
+      .then((data) => {
+        // Ensure data is always an array
+        setTurnos(Array.isArray(data) ? data : []);
+      })
+      .catch(async (e) => {
+        try {
+          const fallbackData = await getTurnosDesdeUsuarioFallback(user.userId);
+          setTurnos(Array.isArray(fallbackData) ? fallbackData : []);
+        } catch {
+          setErr(e.message ?? "Error");
+        }
+      })
       .finally(() => setLoading(false));
   }, [role, user?.userId]);
 
@@ -34,19 +43,27 @@ export default function MisTurnosPage() {
     const hhmm = (t.horaInicio ?? "00:00:00").slice(0, 5); // "HH:mm"
     return new Date(`${t.fecha}T${hhmm}`);
   };
-  const esFuturo = (t: TurnoDTO) => toDate(t).getTime() >= Date.now();
-  const puedeCancelar = (t: TurnoDTO) => t.estado === "PENDIENTE" && esFuturo(t);
-
-  const asc = (a: TurnoDTO, b: TurnoDTO) => toDate(a).getTime() - toDate(b).getTime();
-  const desc = (a: TurnoDTO, b: TurnoDTO) => toDate(b).getTime() - toDate(a).getTime();
 
   // Próximos: futuros y NO cancelados | Historial: pasados o cancelados
   const turnosVisibles = useMemo(() => {
+    // Ensure turnos is always an array before spreading
+    const turnosArray = Array.isArray(turnos) ? turnos : [];
+    
+    // Helper functions moved inside useMemo to avoid dependency issues
+    const esFuturo = (t: TurnoDTO) => toDate(t).getTime() >= Date.now();
+    const asc = (a: TurnoDTO, b: TurnoDTO) => toDate(a).getTime() - toDate(b).getTime();
+    const desc = (a: TurnoDTO, b: TurnoDTO) => toDate(b).getTime() - toDate(a).getTime();
+    
     if (mostrarHistorial) {
-      return [...turnos].filter((t) => t.estado === "CANCELADO" || !esFuturo(t)).sort(desc);
+      return [...turnosArray].filter((t) => t.estado === "CANCELADO" || !esFuturo(t)).sort(desc);
     }
-    return [...turnos].filter((t) => t.estado !== "CANCELADO" && esFuturo(t)).sort(asc);
+    return [...turnosArray].filter((t) => t.estado !== "CANCELADO" && esFuturo(t)).sort(asc);
   }, [turnos, mostrarHistorial]);
+
+  const puedeCancelar = (t: TurnoDTO) => {
+    const esFuturo = (turno: TurnoDTO) => toDate(turno).getTime() >= Date.now();
+    return t.estado === "PENDIENTE" && esFuturo(t);
+  };
 
   const hayAcciones = turnosVisibles.some(puedeCancelar);
 
@@ -67,7 +84,7 @@ export default function MisTurnosPage() {
   const Pill = ({ estado }: { estado: TurnoDTO["estado"] }) => {
     const base = "px-2 py-1 rounded-md text-xs tracking-wide";
     const m =
-      estado === "CONFIRMADO"
+      estado === "FINALIZADO"
         ? "bg-emerald-500/20 text-emerald-300"
         : estado === "CANCELADO"
         ? "bg-rose-500/25 text-rose-300"
@@ -110,7 +127,7 @@ export default function MisTurnosPage() {
         <div className="mt-6 flex items-center justify-center gap-3">
           <button
             onClick={() => setMostrarHistorial(false)}
-            className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-200 ${
+            className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-200 cursor-pointer ${
               !mostrarHistorial
                 ? "bg-[#fee600] text-black border-[#fee600] hover:bg-yellow-400"
                 : "border-[#fee600] text-[#fee600] hover:bg-[#fee600] hover:text-black"
@@ -120,7 +137,7 @@ export default function MisTurnosPage() {
           </button>
           <button
             onClick={() => setMostrarHistorial(true)}
-            className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-200 ${
+            className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-200 cursor-pointer ${
               mostrarHistorial
                 ? "bg-[#fee600] text-black border-[#fee600] hover:bg-yellow-400"
                 : "border-[#fee600] text-[#fee600] hover:bg-[#fee600] hover:text-black"
@@ -130,11 +147,19 @@ export default function MisTurnosPage() {
           </button>
         </div>
 
+        {/* Información de debug */}
+        <div className="mt-4 text-xs text-gray-400">
+          Usuario ID: {user?.userId} | Total turnos: {turnos.length} | Mostrando: {turnosVisibles.length}
+        </div>
+
         {/* Tabla */}
         <div className="mt-6 overflow-x-auto rounded-xl border border-[#fee600]">
           {turnosVisibles.length === 0 ? (
             <div className="p-4 bg-yellow-50 text-black">
-              No hay turnos en esta vista.{" "}
+              {turnos.length === 0 
+                ? "No tienes turnos reservados aún." 
+                : `No hay turnos en esta vista (${mostrarHistorial ? 'historial' : 'próximos'}).`
+              }{" "}
               <Link href="/clases" className="underline font-semibold">
                 Ir a clases
               </Link>
@@ -152,7 +177,14 @@ export default function MisTurnosPage() {
               <tbody>
                 {turnosVisibles.map((t) => (
                   <tr key={t.id} className="border-t">
-                    <td className="p-3">{t.clase?.nombre ?? "—"}</td>
+                    <td className="p-3">
+                      {t.clase?.nombre ?? "Clase no disponible"}
+                      {t.clase?.instructor && (
+                        <div className="text-xs text-gray-400">
+                          con {t.clase.instructor}
+                        </div>
+                      )}
+                    </td>
                     <td className="p-3">
                       {t.fecha} {t.horaInicio?.slice(0, 5) ?? ""} hs
                     </td>
@@ -162,7 +194,7 @@ export default function MisTurnosPage() {
                     {hayAcciones && (
                       <td className="p-3 text-right">
                         {puedeCancelar(t) && (
-                          <button onClick={() => handleCancelar(t.id)} className="px-3 py-1 rounded border">
+                          <button onClick={() => handleCancelar(t.id)} className="px-3 py-1 rounded border cursor-pointer">
                             Cancelar
                           </button>
                         )}
