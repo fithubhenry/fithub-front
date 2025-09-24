@@ -61,7 +61,9 @@ export async function login(userData: ILoginUser) {
       const base64Payload = parsedResponse.access_token.split('.')[1];
       const payload = JSON.parse(atob(base64Payload.replace(/-/g, '+').replace(/_/g, '/')));
       if (payload.estado && payload.estado === 'Inactivo') {
-        toast.error('El usuario fue eliminado y no puede iniciar sesión. Por favor contactar con administración');
+        toast.error('El usuario fue eliminado y no puede iniciar sesión. Por favor contactar con administración: fithub.soporte@gmail.com', {
+          autoClose: 5000
+        });
         return null;
       }
       // Guardar token en cookies

@@ -52,15 +52,15 @@ function ActivityCard({
   const esRegistrado = isAuthenticated && user?.estado === "Invitado";
   const esPremium = isAuthenticated && user?.estado === "Activo";
 
-  const textoBoton = esPremium ? "Reservar Clase" : esRegistrado ? "Solo Premium" : "Iniciar sesión";
-  const deshabilitado = esRegistrado;
+  const textoBoton = esPremium ? "Reservar Clase" : esRegistrado ? "Hazte Premium" : "Iniciar sesión";
+  const deshabilitado = false; // Permitir que todos los botones sean clickeables
 
 async function manejarClick(e: React.MouseEvent<HTMLButtonElement>) {
   e.preventDefault();
   e.stopPropagation();
 
   if (esInvitado) return router.push("/login");
-  if (esRegistrado) return; // solo premium puede reservar
+  if (esRegistrado) return router.push("/pago"); // redirigir a página de pago
 
   // Siempre redirigir a la página de detalle para seleccionar horario
   toast.info(`Ve los horarios disponibles para ${nombre} y selecciona el que prefieras.`);

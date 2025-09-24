@@ -46,7 +46,7 @@ export default function PagoPage() {
 
         <div className="mb-4 flex flex-col items-center">
           <div className="bg-gray-100 rounded-lg p-4 w-full flex flex-col items-center">
-            <span className="text-2xl font-bold text-gray-900 mb-1">$29.999</span>
+            <span className="text-2xl font-bold text-gray-900 mb-1">$100</span>
             <span className="text-gray-500 mb-2">por mes</span>
             <span className="inline-block bg-[#fee600] rounded-full px-3 py-1 text-sm font-semibold text-black">Oferta limitada</span>
           </div>

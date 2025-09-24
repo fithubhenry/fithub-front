@@ -34,10 +34,10 @@ export default function ClasesAdminPage() {
     fetchClases();
   }, []);
   const [form, setForm] = useState({
-    nombre: 'Voley',
-    descripcion: 'asncioas',
-    intensidad: 'Media',
-    instructor: 'Juli',
+    nombre: '',
+    descripcion: '',
+    intensidad: '',
+    instructor: '',
     horarios: [{
       fecha: '',
       horaInicio: '',
@@ -45,10 +45,10 @@ export default function ClasesAdminPage() {
     }],
     duracion: '',
     capacidad: 0,
-    tipo: 'Yoga',
-    grupo_musculo: 'Pierna',
-    sub_musculo: 'Abdominal',
-    sede: 'Central',
+    tipo: '',
+    grupo_musculo: '',
+    sub_musculo: '',
+    sede: '',
     imageUrl: '',
   });
 

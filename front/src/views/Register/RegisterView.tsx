@@ -33,15 +33,15 @@ const RegisterView = () => {
 
         <Formik<RegisterFormValues>
           initialValues={{
-            nombre: "Juan",
-            apellido: "Doe",
+            nombre: "",
+            apellido: "",
             fecha_nacimiento: "",
-            email: "mail@gmail.com",
-            password: "123456",
-            confirmPassword: "T!aA123",
-            ciudad: "Buenos Aires",
-            direccion: "Direccion Falsa 123",
-            telefono: "1234567890"
+            email: "",
+            password: "",
+            confirmPassword: "",
+            ciudad: "",
+            direccion: "",
+            telefono: ""
           }}
           validationSchema={validateFormRegister}
           onSubmit={async (values, { setSubmitting }) => {
@@ -206,7 +206,7 @@ focus:outline-none focus:ring-2 focus:ring-[#fee600] focus:border-[#fee600] tran
                 <Field
                   name="direccion"
                   type="text"
-                  placeholder="Av. Siempre Viva 742"
+                  placeholder="Tu dirección"
                   className="w-full py-3 px-4 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-300
 focus:outline-none focus:ring-2 focus:ring-[#fee600] focus:border-[#fee600] transition-colors duration-200"
                 />
@@ -221,7 +221,7 @@ focus:outline-none focus:ring-2 focus:ring-[#fee600] focus:border-[#fee600] tran
                 <Field
                   name="telefono"
                   type="text"
-                  placeholder="+54 9 11 1234 5678"
+                  placeholder="Tu teléfono"
                   className="w-full py-3 px-4 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-300
 focus:outline-none focus:ring-2 focus:ring-[#fee600] focus:border-[#fee600] transition-colors duration-200"
                 />

@@ -122,9 +122,9 @@ export default function UsuariosAdminPage() {
 
   return (
     <main className="bg-black">
-  <div className="min-h-screen bg-black pt-8 flex flex-col px-6 max-w-screen-2xl mx-auto">
+  <div className="min-h-screen bg-black pt-8 flex flex-col px-2 sm:px-6 max-w-screen-2xl mx-auto">
       {/* Header */}
-  <div className="flex bg-black items-center justify-between w-full mb-8 px-8">
+  <div className="flex bg-black items-center justify-between w-full mb-8 px-2 sm:px-8">
         <div>
           <h1 className="text-3xl font-bold text-[#fee600] drop-shadow-lg">Gestión de Usuarios</h1>
           <p className="text-gray-300">Administra los miembros del gimnasio</p>
@@ -132,7 +132,7 @@ export default function UsuariosAdminPage() {
       </div>
 
       {/* Stats Cards */}
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-8 px-8">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-8 px-2 sm:px-8">
         <div className="bg-black border-[#fee600] border-2 rounded-xl p-6 flex flex-col justify-between">
           <p className="text-sm font-medium text-gray-300">Total Usuarios</p>
           <p className="text-2xl font-bold text-[#fee600] flex items-center gap-2">{users.filter(u => u.estado !== "Inactivo").length} <FaUser className="text-[#fee600]" /></p>
@@ -309,7 +309,7 @@ export default function UsuariosAdminPage() {
 
       {/* Tabla de usuarios */}
       <div className="bg-black border-[#fee600] border-2 w-full rounded-xl mb-8">
-        <div className="p-6 px-8">
+        <div className="p-2 px-2 sm:p-6 sm:px-8">
           <h2 className="text-[#fee600] text-xl font-bold mb-2">Lista de Usuarios</h2>
           <p className="text-gray-300 mb-4">{filteredUsers.length} usuario{filteredUsers.length !== 1 ? "s" : ""} encontrado{filteredUsers.length !== 1 ? "s" : ""}</p>
           {loading ? (
@@ -319,42 +319,42 @@ export default function UsuariosAdminPage() {
               <table className="w-full bg-black border border-[#fee600] rounded-xl text-[#fee600] table-fixed shadow-lg">
                 <thead>
                   <tr className="bg-[#fee600]/10">
-                    <th className="px-4 py-3 border-b border-[#fee600] text-left text-base font-bold tracking-wide">Nombre</th>
-                    <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Rol</th>
-                    <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Estado</th>
-                    <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Teléfono</th>
-                    <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Último Pago</th>
-                    <th className="px-4 py-3 border-b border-[#fee600] text-center text-base font-bold tracking-wide">Acciones</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-left text-xs sm:text-sm font-bold tracking-wide">Nombre</th>
+                    <th className="hidden sm:table-cell px-4 py-3 border-b border-[#fee600] text-center text-sm font-bold tracking-wide">Rol</th>
+                    <th className="px-1 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-center text-xs sm:text-sm font-bold tracking-wide">Estado</th>
+                    <th className="px-1 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-center text-xs sm:text-sm font-bold tracking-wide">Teléfono</th>
+                    <th className="px-1 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-center text-xs sm:text-sm font-bold tracking-wide">Último Pago</th>
+                    <th className="px-1 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-center text-xs sm:text-sm font-bold tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredUsers.map(user => (
                     <tr key={user.id} className="hover:bg-[#fee600]/10 transition-colors">
-                      <td className="px-4 py-3 border-b border-[#fee600] font-medium text-base">
+                      <td className="px-2 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] font-medium text-xs sm:text-sm">
                         {editingId === user.id ? (
                           <input
-                            className="border border-[#fee600] rounded px-2 py-1 w-full bg-black text-[#fee600] focus:ring-2 focus:ring-[#fee600] text-center text-sm"
+                            className="border border-[#fee600] rounded px-2 py-1 w-full bg-black text-[#fee600] focus:ring-2 focus:ring-[#fee600] text-center text-xs"
                             value={editName}
                             onChange={e => setEditName(e.target.value)}
                           />
                         ) : (
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1 sm:gap-2">
                             {user.imageUrl ? (
-                              <Image src={user.imageUrl} alt={user.name} width={28} height={28} className="rounded-full object-cover border border-[#fee600]" />
+                              <Image src={user.imageUrl} alt={user.name} width={20} height={20} className="hidden sm:block rounded-full object-cover border border-[#fee600]" />
                             ) : (
-                              <FaUser className="text-[#fee600] w-7 h-7" />
+                              <FaUser className="hidden sm:block text-[#fee600] w-4 h-4 sm:w-5 sm:h-5" />
                             )}
-                            <div>
-                              <span className="font-bold text-[#fee600] align-middle">{user.name}</span>
-                              <div className="text-xs text-gray-400 mt-1">{user.email}</div>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-[#fee600] truncate text-xs sm:text-sm">{user.name}</div>
+                              <div className="text-xs text-gray-400 truncate">{user.email}</div>
                             </div>
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3 border-b border-[#fee600] text-center">
+                      <td className="hidden sm:table-cell px-4 py-3 border-b border-[#fee600] text-center">
                         {editingId === user.id ? (
                           <select
-                            className="border border-[#fee600] rounded px-2 py-1 w-full bg-black text-[#fee600] focus:ring-2 focus:ring-[#fee600] text-center text-sm"
+                            className="border border-[#fee600] rounded px-2 py-1 w-full bg-black text-[#fee600] focus:ring-2 focus:ring-[#fee600] text-center text-xs"
                             value={editRole}
                             onChange={e => setEditRole(e.target.value as 'Admin' | 'Usuario')}
                           >
@@ -362,39 +362,48 @@ export default function UsuariosAdminPage() {
                             <option value="Admin">Admin</option>
                           </select>
                         ) : (
-                          <span className={user.role === "Admin" ? "bg-[#fee600] text-black px-2 py-1 rounded font-bold" : "bg-black text-[#fee600] border border-[#fee600] px-2 py-1 rounded font-bold"}>{user.role}</span>
+                          <span className={user.role === "Admin" ? "bg-black text-[#fee600] border border-[#fee600] px-2 py-1 rounded font-bold text-xs" : "bg-[#fee600] text-black px-2 py-1 rounded font-bold text-xs"}>{user.role}</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 border-b border-[#fee600] text-center">
-                        <span
-                          className="inline-block px-4 py-1 rounded-full font-semibold text-sm bg-[#fee600] text-black border border-[#fee600] min-w-0"
-                          style={{ maxWidth: '140px', textAlign: 'center', whiteSpace: 'nowrap' }}
-                        >
-                          {user.estado}
-                        </span>
+                      <td className="px-1 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-center">
+                        {user.role === "Admin" ? (
+                          <span className="inline-block px-1 py-1 sm:px-2 sm:py-1 rounded-full font-semibold bg-black text-[#fee600] border border-[#fee600] whitespace-nowrap" style={{ fontSize: '10px' }}>
+                            Admin
+                          </span>
+                        ) : (
+                          <span className="inline-block px-1 py-1 sm:px-2 sm:py-1 rounded-full font-semibold bg-[#fee600] text-black border border-[#fee600] whitespace-nowrap" style={{ fontSize: '10px' }}>
+                            {user.estado}
+                          </span>
+                        )}
                       </td>
-                      <td className="px-4 py-3 border-b border-[#fee600] text-center">
-                        <span className="px-3 py-1 rounded-full font-semibold text-black bg-[#fee600] text-xs">
+                      <td className="px-1 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-center">
+                        <span className="px-1 py-1 sm:px-2 sm:py-1 rounded-full font-semibold text-black bg-[#fee600] text-xs whitespace-nowrap" style={{ fontSize: '10px' }}>
                           {user.telefono ? user.telefono : '-'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 border-b border-[#fee600] text-center">
-                        <span className="px-3 py-1 rounded-full font-semibold text-black bg-[#fee600] text-xs">
-                          {user.ultimoPago ? user.ultimoPago : 'Sin pagos'}
-                        </span>
+                      <td className="px-1 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-center">
+                        {user.role === "Admin" ? (
+                          <span className="px-1 py-1 sm:px-2 sm:py-1 rounded-full font-semibold text-[#fee600] bg-black border border-[#fee600] whitespace-nowrap" style={{ fontSize: '10px' }}>
+                            Admin
+                          </span>
+                        ) : (
+                          <span className="px-1 py-1 sm:px-2 sm:py-1 rounded-full font-semibold text-black bg-[#fee600] whitespace-nowrap" style={{ fontSize: '10px' }}>
+                            {user.ultimoPago ? user.ultimoPago : 'Sin pagos'}
+                          </span>
+                        )}
                       </td>
-                      <td className="px-4 py-3 border-b border-[#fee600] text-center">
-                        <div className="flex flex-wrap items-center justify-center gap-2">
+                      <td className="px-1 py-2 sm:px-4 sm:py-3 border-b border-[#fee600] text-center">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
                           {editingId === user.id ? (
                             <>
                               <button
-                                className="bg-[#fee600] text-black font-semibold px-4 py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-sm"
+                                className="bg-[#fee600] text-black font-semibold px-2 py-1 sm:px-4 sm:py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-xs sm:text-sm min-w-fit"
                                 onClick={() => handleSave(user.id)}
                               >
                                 Guardar
                               </button>
                               <button
-                                className="bg-gray-400 text-black font-semibold px-4 py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-sm"
+                                className="bg-gray-400 text-black font-semibold px-2 py-1 sm:px-4 sm:py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-xs sm:text-sm min-w-fit"
                                 onClick={() => setEditingId(null)}
                               >
                                 Cancelar
@@ -405,7 +414,7 @@ export default function UsuariosAdminPage() {
                               {/* Editar eliminado por requerimiento */}
                               {user.role !== "Admin" ? (
                                 <button
-                                  className="bg-[#fee600] text-black font-semibold px-3 py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-sm min-w-fit"
+                                  className="bg-[#fee600] text-black font-semibold px-2 py-1 sm:px-3 sm:py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-xs sm:text-sm min-w-fit"
                                   onClick={async () => {
                                     try {
                                       const res = await api.get(`/users/admin/new/${user.id}`);
@@ -434,11 +443,12 @@ export default function UsuariosAdminPage() {
                                     }
                                   }}
                                 >
-                                  Hacer Admin
+                                  <span className="sm:hidden">+ Admin</span>
+                                  <span className="hidden sm:inline">Hacer Admin</span>
                                 </button>
                               ) : (
                                 <button
-                                  className="bg-gray-400 text-black font-semibold px-3 py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-sm min-w-fit"
+                                  className="bg-gray-400 text-black font-semibold px-2 py-1 sm:px-3 sm:py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-xs sm:text-sm min-w-fit"
                                   onClick={async () => {
                                     try {
                                       const res = await api.get(`/users/admin/delete/${user.id}`);
@@ -467,11 +477,12 @@ export default function UsuariosAdminPage() {
                                     }
                                   }}
                                 >
-                                  Quitar Admin
+                                  <span className="sm:hidden">- Admin</span>
+                                  <span className="hidden sm:inline">Quitar Admin</span>
                                 </button>
                               )}
                               <button
-                                className="bg-[#fee600] text-black font-semibold px-3 py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-sm min-w-fit"
+                                className="bg-[#fee600] text-black font-semibold px-2 py-1 sm:px-3 sm:py-1 rounded hover:bg-black hover:text-[#fee600] border border-[#fee600] transition-colors text-xs sm:text-sm min-w-fit"
                                 onClick={() => handleDeleteUser(user.id)}
                               >
                                 Eliminar

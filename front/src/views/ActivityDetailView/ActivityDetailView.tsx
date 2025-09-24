@@ -5,6 +5,7 @@ import { IClase } from "@/types";
 import Image from "next/image";
 import { Clock, Users } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 import ReservarHorario from "@/components/ReservarHorario/ReservarHorario";
 
 const intensityStyles: Record<IClase["intensidad"], string> = {
@@ -16,9 +17,17 @@ const intensityStyles: Record<IClase["intensidad"], string> = {
 
 export default function ActivityDetailView({ clase }: { clase: IClase }) {
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   if (!clase) return <div className="p-6">Clase no encontrada</div>;
 
+  const esInvitado = !isAuthenticated;
+  const esRegistrado = isAuthenticated && user?.estado === "Invitado";
   const esPremium = isAuthenticated && user?.estado === "Activo";
+
+  const manejarClickPremium = () => {
+    if (esInvitado) return router.push("/login");
+    if (esRegistrado) return router.push("/pago");
+  };
 
   return (
     <div className="mt-10 max-w-5xl mx-auto p-6 bg-white rounded-xl shadow">
@@ -67,10 +76,10 @@ export default function ActivityDetailView({ clase }: { clase: IClase }) {
           ) : (
             <button
               type="button"
-              disabled
-              className="mt-3 w-full rounded-md px-4 py-2.5 text-sm font-semibold bg-neutral-300 text-neutral-500 cursor-not-allowed"
+              onClick={manejarClickPremium}
+              className="mt-3 w-full rounded-md px-4 py-2.5 text-sm font-semibold bg-black text-[#fee600] border border-[#fee600] hover:bg-[#fee600] hover:text-black transition-colors cursor-pointer"
             >
-              Solo Premium
+              {esRegistrado ? "Hazte Premium" : "Iniciar sesión"}
             </button>
           )}
         </div>
