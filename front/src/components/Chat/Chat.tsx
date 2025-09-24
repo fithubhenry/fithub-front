@@ -142,7 +142,7 @@ const Chat: React.FC<ChatProps> = ({ className = '' }) => {
             <div
               className={`max-w-[80%] p-3 rounded-lg ${
                 message.isUser
-                  ? 'bg-[#fee600] text-white rounded-br-none'
+                  ? 'bg-[#fee600] text-black rounded-br-none'
                   : 'bg-gray-100 text-gray-800 rounded-bl-none'
               }`}
             >
@@ -153,7 +153,7 @@ const Chat: React.FC<ChatProps> = ({ className = '' }) => {
                 <div className="flex-1">
                   <p className="text-sm whitespace-pre-wrap">{message.text}</p>
                   <p className={`text-xs mt-1 ${
-                    message.isUser ? 'text-blue-100' : 'text-gray-500'
+                    message.isUser ? 'text-black' : 'text-black'
                   }`}>
                     {formatTime(message.timestamp)}
                   </p>
