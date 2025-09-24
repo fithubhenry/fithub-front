@@ -181,6 +181,13 @@ export default function UsuariosAdminPage() {
       {showInactiveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
           <div className="bg-gray-900 border border-[#fee600] rounded-xl p-6 w-full max-w-3xl shadow-xl relative" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+            {/* Botón de cerrar */}
+            <button
+              className="absolute top-4 right-4 text-[#fee600] hover:text-white hover:bg-[#fee600] rounded-full w-8 h-8 flex items-center justify-center font-bold text-xl transition-colors"
+              onClick={() => setShowInactiveModal(false)}
+            >
+              ×
+            </button>
             <h2 className="text-xl font-bold text-[#fee600] mb-4 text-center">Usuarios Inactivos</h2>
             {inactiveUsers.length === 0 ? (
               <p className="text-gray-300 text-center">No hay usuarios inactivos.</p>
