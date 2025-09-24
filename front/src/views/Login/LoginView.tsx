@@ -104,7 +104,7 @@ const LoginView = () => {
           <GoogleButton
             onClick={() => {
               // Redirige directo al backend
-              window.location.href = "https://fithub-back-pv0m.onrender.com/auth/google";
+              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
             }}
             text="Iniciar sesión con Google"
           />

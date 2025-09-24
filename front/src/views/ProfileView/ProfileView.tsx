@@ -230,7 +230,7 @@ export default function ProfileView() {
               )}
 
               {/* Sugerencia de upgrade para usuarios registrados */}
-              {esRegistrado && (
+              {esRegistrado && !user?.esAdmin && (
                 <Link
                   href="/pago"
                   className="mt-3 px-4 py-2 rounded-lg border border-[#fee600] text-[#fee600] font-semibold hover:bg-[#fee600] hover:text-black transition-colors duration-200 cursor-pointer"

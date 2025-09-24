@@ -35,7 +35,7 @@ export async function cargarSlots(
 ): Promise<Slot[]> {
   // 1) intento endpoint oficial
   try {
-    const r = await fetch(`${API}/clases/${claseId}/turnos-disponibles`, { cache: "no-store" });
+    const r = await fetch(`${API}/clases/${claseId}`, { cache: "no-store" });
     if (r.ok) {
       const data: any[] = await r.json();
       const arr: any[] = Array.isArray(data) ? data : [];

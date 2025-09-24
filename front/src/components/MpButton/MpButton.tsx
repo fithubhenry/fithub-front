@@ -13,7 +13,7 @@ export default function MpButton() {
 
     setLoading(true);
     try {
-      const res = await fetch("https://fithub-back-pv0m.onrender.com/mercado-pago/create-preference", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/mercado-pago/create-preference`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
