@@ -30,7 +30,7 @@ const Chat: React.FC<ChatProps> = ({ className = '' }) => {
 
   const sendMessage = async (userMessage: string) => {
     try {
-      const res = await fetch("https://fithub-back-pv0m.onrender.com/chat", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage }),

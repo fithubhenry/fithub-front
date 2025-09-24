@@ -247,7 +247,7 @@ focus:outline-none focus:ring-2 focus:ring-[#fee600] focus:border-[#fee600] tran
         <div className="mt-4">
           <GoogleButton
             onClick={() => {
-              window.location.href = "https://fithub-back-pv0m.onrender.com/auth/google";
+              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
             }}
             text="Registrarse con Google"
           />
