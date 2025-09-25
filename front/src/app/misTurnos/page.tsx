@@ -82,13 +82,13 @@ export default function MisTurnosPage() {
 
   // Pill de estado
   const Pill = ({ estado }: { estado: TurnoDTO["estado"] }) => {
-    const base = "px-2 py-1 rounded-md text-xs tracking-wide";
+    const base = "px-1 py-0.5 sm:px-2 sm:py-1 rounded text-[7px] sm:text-xs tracking-normal whitespace-nowrap leading-tight";
     const m =
       estado === "FINALIZADO"
         ? "bg-emerald-500/20 text-emerald-300"
         : estado === "CANCELADO"
         ? "bg-rose-500/25 text-rose-300"
-        : "bg-yellow-500/20 text-yellow-800";
+        : "bg-yellow-500/20 text-yellow-300";
     return <span className={`${base} ${m}`}>{estado}</span>;
   };
 
@@ -119,15 +119,15 @@ export default function MisTurnosPage() {
 
   // === UI principal ===
   return (
-    <div className="min-h-screen bg-black pt-20 px-6">
-      <div className="max-w-3xl mx-auto bg-black border-[#fee600] rounded-2xl border-2 p-6 shadow-[6px_8px_24px_0px_rgba(253,230,0,0.4)]">
-        <h1 className="text-center text-2xl font-anton text-[#fee600]">MIS TURNOS</h1>
+    <div className="min-h-screen bg-black pt-20 px-1 sm:px-6">
+      <div className="max-w-3xl mx-auto bg-black border-[#fee600] rounded-xl sm:rounded-2xl border-2 p-2 sm:p-6 shadow-[6px_8px_24px_0px_rgba(253,230,0,0.4)]">
+        <h1 className="text-center text-lg sm:text-2xl font-anton text-[#fee600]">MIS TURNOS</h1>
 
         {/* Tabs */}
-        <div className="mt-6 flex items-center justify-center gap-3">
+        <div className="mt-3 sm:mt-6 flex items-center justify-center gap-1 sm:gap-3">
           <button
             onClick={() => setMostrarHistorial(false)}
-            className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-200 cursor-pointer ${
+            className={`px-2 py-1 sm:px-4 sm:py-2 rounded border font-semibold text-xs sm:text-base transition-colors duration-200 cursor-pointer ${
               !mostrarHistorial
                 ? "bg-[#fee600] text-black border-[#fee600] hover:bg-yellow-400"
                 : "border-[#fee600] text-[#fee600] hover:bg-[#fee600] hover:text-black"
@@ -137,7 +137,7 @@ export default function MisTurnosPage() {
           </button>
           <button
             onClick={() => setMostrarHistorial(true)}
-            className={`px-4 py-2 rounded-lg border font-semibold transition-colors duration-200 cursor-pointer ${
+            className={`px-2 py-1 sm:px-4 sm:py-2 rounded border font-semibold text-xs sm:text-base transition-colors duration-200 cursor-pointer ${
               mostrarHistorial
                 ? "bg-[#fee600] text-black border-[#fee600] hover:bg-yellow-400"
                 : "border-[#fee600] text-[#fee600] hover:bg-[#fee600] hover:text-black"
@@ -148,14 +148,19 @@ export default function MisTurnosPage() {
         </div>
 
         {/* Información de debug */}
-        <div className="mt-4 text-xs text-gray-400">
-          Usuario ID: {user?.userId} | Total turnos: {turnos.length} | Mostrando: {turnosVisibles.length}
+        <div className="mt-2 sm:mt-4 text-xs text-gray-400 text-center">
+          <div className="sm:hidden" style={{ fontSize: '10px' }}>
+            {turnosVisibles.length} turnos
+          </div>
+          <div className="hidden sm:block">
+            Usuario ID: {user?.userId} | Total turnos: {turnos.length} | Mostrando: {turnosVisibles.length}
+          </div>
         </div>
 
         {/* Tabla */}
-        <div className="mt-6 overflow-x-auto rounded-xl border border-[#fee600]">
+        <div className="mt-3 sm:mt-6 overflow-x-auto rounded border border-[#fee600]">
           {turnosVisibles.length === 0 ? (
-            <div className="p-4 bg-yellow-50 text-black">
+            <div className="p-2 sm:p-4 bg-yellow-50 text-black text-xs sm:text-sm">
               {turnos.length === 0 
                 ? "No tienes turnos reservados aún." 
                 : `No hay turnos en esta vista (${mostrarHistorial ? 'historial' : 'próximos'}).`
@@ -165,37 +170,43 @@ export default function MisTurnosPage() {
               </Link>
             </div>
           ) : (
-            <table className="w-full text-white">
+            <table className="w-full text-white min-w-[350px]">
               <thead className="bg-yellow-500/10">
                 <tr>
-                  <th className="p-3 text-left">Clase</th>
-                  <th className="p-3 text-left">Fecha</th>
-                  <th className="p-3 text-left">Estado</th>
-                  {hayAcciones && <th className="p-3 text-right">Acciones</th>}
+                  <th className="px-0.5 py-1 sm:p-3 text-left text-[9px] sm:text-sm font-bold">Clase</th>
+                  <th className="px-0.5 py-1 sm:p-3 text-left text-[9px] sm:text-sm font-bold">Fecha</th>
+                  <th className="px-0.5 py-1 sm:p-3 text-center text-[9px] sm:text-sm font-bold">Estado</th>
+                  {hayAcciones && <th className="px-0.5 py-1 sm:p-3 text-center text-[9px] sm:text-sm font-bold w-10 sm:w-auto sm:text-right">Acciones</th>}
                 </tr>
               </thead>
               <tbody>
                 {turnosVisibles.map((t) => (
-                  <tr key={t.id} className="border-t">
-                    <td className="p-3">
-                      {t.clase?.nombre ?? "Clase no disponible"}
+                  <tr key={t.id} className="border-t border-gray-600">
+                    <td className="px-0.5 py-1 sm:p-3">
+                      <div className="text-[9px] sm:text-sm font-medium text-white leading-tight">
+                        {t.clase?.nombre ?? "Clase no disponible"}
+                      </div>
                       {t.clase?.instructor && (
-                        <div className="text-xs text-gray-400">
+                        <div className="text-[8px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 leading-tight">
                           con {t.clase.instructor}
                         </div>
                       )}
                     </td>
-                    <td className="p-3">
-                      {t.fecha} {t.horaInicio?.slice(0, 5) ?? ""} hs
+                    <td className="px-0.5 py-1 sm:p-3">
+                      <div className="text-[9px] sm:text-sm leading-tight">
+                        <div>{t.fecha}</div>
+                        <div className="text-[8px] sm:text-xs text-gray-400">{t.horaInicio?.slice(0, 5) ?? ""} hs</div>
+                      </div>
                     </td>
-                    <td className="p-3">
+                    <td className="px-0.5 py-1 sm:p-3 text-center">
                       <Pill estado={t.estado} />
                     </td>
                     {hayAcciones && (
-                      <td className="p-3 text-right">
+                      <td className="px-0.5 py-1 sm:p-3 text-center sm:text-right">
                         {puedeCancelar(t) && (
-                          <button onClick={() => handleCancelar(t.id)} className="px-3 py-1 rounded border cursor-pointer">
-                            Cancelar
+                          <button onClick={() => handleCancelar(t.id)} className="px-0.5 py-0.5 sm:px-3 sm:py-1 rounded border border-gray-400 hover:border-red-500 hover:text-red-400 transition-colors text-[8px] sm:text-sm cursor-pointer w-5 h-5 sm:w-auto sm:h-auto flex items-center justify-center">
+                            <span className="sm:hidden">✕</span>
+                            <span className="hidden sm:inline">Cancelar</span>
                           </button>
                         )}
                       </td>

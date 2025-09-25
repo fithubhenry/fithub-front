@@ -21,7 +21,9 @@ export default function GoogleCallbackPage() {
       if (payload.estado && payload.estado === 'Inactivo') {
         // Mostrar toast y no loguear
         import('react-toastify').then(({ toast }) => {
-          toast.error('El usuario fue eliminado y no puede iniciar sesión. Por favor contactar con administración');
+          toast.error('El usuario fue eliminado y no puede iniciar sesión. Por favor contactar con administración: fithub.soporte@gmail.com', {
+            autoClose: 5000
+          });
         });
         return;
       }

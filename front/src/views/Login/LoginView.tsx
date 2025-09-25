@@ -35,8 +35,8 @@ const LoginView = () => {
 
         <Formik<ILoginUser>
           initialValues={{
-            email: 'usuario@ejemplo.com',
-            password: 'Test123!'
+            email: '',
+            password: ''
           }}
           validationSchema={validateFormLogin}
           onSubmit={async (values, { setSubmitting }) => {

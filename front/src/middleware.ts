@@ -12,7 +12,7 @@ function decodeToken(token: string) {
   }
 }
 
-const protectedRoutes = ["/dashboard", "/profile","misTurnos"];
+const protectedRoutes = ["/dashboard", "/profile","/misTurnos"];
 const adminRoutes = ["/admin", "/usuarios"];
 const guestOnlyRoutes = ["/login", "/register"];
 
